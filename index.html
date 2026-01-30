@@ -1,95 +1,45 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
-<title>TEQRA // SYSTEM BREACH</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>TEQRA // FOUNDATION</title>
 
 <style>
-/* ================= CORE ================= */
+/* ===== BLOCK SELECTION ===== */
+*{
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
+}
+html,body{overscroll-behavior:none}
+
+/* ===== COLORS ===== */
 :root{
   --bg:#000;
   --green:#00ff9c;
-  --red:#ff4d4d;
   --gold:#ffb86b;
-  --blue:#6ecbff;
-  --violet:#c77dff;
+  --red:#ff4d4d;
   --white:#eaeaea;
 }
 
-*{margin:0;padding:0;box-sizing:border-box;}
+/* ===== BASE ===== */
 body{
+  margin:0;
   background:var(--bg);
   color:var(--white);
-  font-family: "Courier New", monospace;
+  font-family:"Courier New", monospace;
   overflow:hidden;
 }
 
-/* ================= MATRIX ================= */
-#matrix{
+/* ===== MATRIX ===== */
+canvas{
   position:fixed;
   inset:0;
   z-index:1;
-  background:black;
-}
-canvas{display:block}
-
-/* ================= UI LAYER ================= */
-#ui{
-  position:fixed;
-  inset:0;
-  z-index:3;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  pointer-events:none;
 }
 
-.screen{
-  width:100%;
-  max-width:720px;
-  padding:24px;
-  text-align:center;
-  pointer-events:auto;
-}
-
-/* ================= TEXT ================= */
-.line{
-  font-size:18px;
-  line-height:1.6;
-  margin:12px 0;
-  opacity:0;
-  transform:translateY(10px);
-  transition:all .8s ease;
-}
-.line.show{opacity:1;transform:none;}
-
-.glitch{
-  animation:glitch 2s infinite;
-}
-@keyframes glitch{
-  0%{text-shadow:none}
-  20%{text-shadow:-2px 0 red,2px 0 cyan}
-  40%{text-shadow:2px 0 red,-2px 0 cyan}
-  100%{text-shadow:none}
-}
-
-/* ================= CHOICE ================= */
-.choice{
-  border:1px solid rgba(255,255,255,.3);
-  padding:16px;
-  margin:16px 0;
-  cursor:pointer;
-  transition:.3s;
-}
-.choice:hover{background:rgba(255,255,255,.05)}
-.choice.active{transform:scale(.97);}
-
-.fund{color:var(--gold)}
-.arch{color:var(--blue)}
-.res{color:var(--violet)}
-
-/* ================= FRACTURE ================= */
+/* ===== FRACTURE ===== */
 #fracture{
   position:fixed;
   inset:0;
@@ -98,27 +48,65 @@ canvas{display:block}
 }
 .frag{
   position:absolute;
-  border:1px solid rgba(255,255,255,.15);
-  animation:drift 6s infinite alternate ease-in-out;
+  border:1px solid rgba(255,255,255,.12);
+  animation:drift 8s infinite alternate ease-in-out;
 }
 @keyframes drift{
   from{transform:translate(0,0)}
   to{transform:translate(var(--dx),var(--dy))}
 }
 
-/* ================= HOLD ================= */
+/* ===== UI ===== */
+#ui{
+  position:fixed;
+  inset:0;
+  z-index:3;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+.screen{
+  max-width:720px;
+  padding:24px;
+  text-align:center;
+}
+
+/* ===== TEXT ===== */
+.line{
+  font-size:18px;
+  line-height:1.7;
+  margin:14px 0;
+  opacity:0;
+  transform:translateY(10px);
+  transition:all .8s ease;
+}
+.line.show{opacity:1;transform:none}
+
+.glitch{
+  animation:glitch 1.8s infinite;
+}
+@keyframes glitch{
+  0%{text-shadow:none}
+  25%{text-shadow:-2px 0 red,2px 0 cyan}
+  50%{text-shadow:2px 0 red,-2px 0 cyan}
+  100%{text-shadow:none}
+}
+
+/* ===== HOLD ===== */
 #hold{
   margin-top:40px;
-  padding:20px;
+  padding:22px;
   border:2px solid var(--gold);
   color:var(--gold);
+  letter-spacing:5px;
   font-size:22px;
-  letter-spacing:4px;
   cursor:pointer;
 }
-#hold.active{background:rgba(255,184,107,.15)}
+#hold.active{
+  background:rgba(255,184,107,.15);
+}
 
-/* ================= HIDDEN ================= */
+/* ===== HIDDEN ===== */
 .hidden{display:none}
 </style>
 </head>
@@ -131,37 +119,18 @@ canvas{display:block}
 <div id="ui">
   <div class="screen">
 
-    <!-- PROLOG -->
-    <div id="prolog">
-      <div class="line">СИСТЕМА ВТРАТИЛА ЦЕНТР.</div>
-      <div class="line">ДАНІ БІЛЬШЕ НЕ СХОДЯТЬСЯ.</div>
-      <div class="line">РОЗЛОМ НЕ ЗОВНІ.</div>
-      <div class="line glitch">РОЗЛОМ ВСЕРЕДИНІ.</div>
-    </div>
-
-    <!-- CHOICE -->
-    <div id="choice" class="hidden">
-      <div class="line show">ОБЕРИ ПРИНЦИП.</div>
-
-      <div class="choice fund" data-path="foundation">
-        ФУНДАМЕНТ // СТІЙКІСТЬ
-      </div>
-
-      <div class="choice arch" data-path="architect">
-        АРХІТЕКТОР // ЛОГІКА
-      </div>
-
-      <div class="choice res" data-path="resonance">
-        РЕЗОНАНС // ЗВʼЯЗКИ
-      </div>
-    </div>
-
-    <!-- FOUNDATION -->
-    <div id="foundation" class="hidden">
-      <div class="line show fund">ГЛАВА I — ФУНДАМЕНТ</div>
+    <div id="foundation">
+      <div class="line show" style="color:var(--gold)">ГЛАВА I — ФУНДАМЕНТ</div>
       <div class="line show">ТИ НЕ ВИПРАВЛЯЄШ СИСТЕМУ.</div>
       <div class="line show">ТИ УТРИМУЄШ ЇЇ ВАГУ.</div>
-      <div class="line show glitch">РОЗПАД: <span id="entropy">92</span>%</div>
+
+      <div class="line show glitch">
+        РОЗПАД: <span id="entropy">78</span>%
+      </div>
+
+      <div id="systemMsg" class="line glitch hidden">
+        СИСТЕМА ЧИНИТЬ ОПІР.
+      </div>
 
       <div id="hold">УТРИМУЙ</div>
     </div>
@@ -170,70 +139,56 @@ canvas{display:block}
 </div>
 
 <script>
-/* ================= MATRIX ================= */
+/* ===== MATRIX ===== */
 const c=document.getElementById("matrix"),
 ctx=c.getContext("2d");
-let w,h,cols,chars="01";
+let w,h,cols;
 function resize(){
   w=c.width=innerWidth;
   h=c.height=innerHeight;
   cols=Math.floor(w/16);
 }
 resize();onresize=resize;
+
+const chars="01";
 let drops=Array(cols).fill(0);
+
 function matrix(){
-  ctx.fillStyle="rgba(0,0,0,.2)";
+  ctx.fillStyle="rgba(0,0,0,.25)";
   ctx.fillRect(0,0,w,h);
   ctx.fillStyle="#00ff9c";
   ctx.font="16px monospace";
   drops.forEach((y,i)=>{
-    const t=chars[Math.floor(Math.random()*2)];
-    ctx.fillText(t,i*16,y*16);
-    if(y*16>h||Math.random()>.98)drops[i]=0;
+    ctx.fillText(chars[Math.random()>0.5?1:0],i*16,y*16);
+    if(y*16>h||Math.random()>.97)drops[i]=0;
     drops[i]++;
   });
   requestAnimationFrame(matrix);
 }
 matrix();
 
-/* ================= FRACTURE ================= */
+/* ===== FRACTURE ===== */
 const frac=document.getElementById("fracture");
-for(let i=0;i<12;i++){
+for(let i=0;i<14;i++){
   const f=document.createElement("div");
   f.className="frag";
   f.style.top=Math.random()*100+"%";
   f.style.left=Math.random()*100+"%";
-  f.style.width=100+Math.random()*200+"px";
+  f.style.width=120+Math.random()*220+"px";
   f.style.height=40+Math.random()*120+"px";
-  f.style.setProperty("--dx",(Math.random()*60-30)+"px");
-  f.style.setProperty("--dy",(Math.random()*60-30)+"px");
+  f.style.setProperty("--dx",(Math.random()*80-40)+"px");
+  f.style.setProperty("--dy",(Math.random()*80-40)+"px");
   frac.appendChild(f);
 }
 
-/* ================= FLOW ================= */
-const lines=[...document.querySelectorAll("#prolog .line")];
-lines.forEach((l,i)=>setTimeout(()=>l.classList.add("show"),800*i));
+/* ===== FOUNDATION LOGIC ===== */
+let entropy=78;
+let holding=false;
+let stabilized=false;
 
-setTimeout(()=>{
-  document.getElementById("prolog").classList.add("hidden");
-  document.getElementById("choice").classList.remove("hidden");
-},4200);
-
-/* ================= CHOICE ================= */
-document.querySelectorAll(".choice").forEach(b=>{
-  b.onclick=()=>{
-    document.getElementById("choice").classList.add("hidden");
-    if(b.dataset.path==="foundation"){
-      document.getElementById("foundation").classList.remove("hidden");
-      startFoundation();
-    }
-  }
-});
-
-/* ================= FOUNDATION ================= */
-let entropy=92,holding=false;
 const ent=document.getElementById("entropy");
 const hold=document.getElementById("hold");
+const sys=document.getElementById("systemMsg");
 
 hold.onmousedown=hold.ontouchstart=()=>{
   holding=true;
@@ -244,17 +199,41 @@ document.onmouseup=document.ontouchend=()=>{
   hold.classList.remove("active");
 };
 
-function startFoundation(){
-  setInterval(()=>{
-    if(holding){
-      entropy-=0.4;
-    }else{
-      entropy+=0.2;
-    }
-    entropy=Math.max(0,Math.min(100,entropy));
-    ent.textContent=Math.floor(entropy);
-  },80);
-}
+setInterval(()=>{
+  if(stabilized)return;
+
+  if(holding){
+    entropy-=0.35;
+  }else{
+    entropy+=0.25;
+  }
+
+  entropy=Math.max(0,Math.min(100,entropy));
+  ent.textContent=Math.floor(entropy);
+
+  /* SYSTEM INTERFERENCE */
+  if(entropy>85){
+    sys.textContent="ПОМИЛКА СИНХРОНІЗАЦІЇ.";
+    sys.classList.remove("hidden");
+  }else if(entropy>70){
+    sys.textContent="СТАБІЛЬНІСТЬ НЕ ГАРАНТОВАНА.";
+    sys.classList.remove("hidden");
+  }else{
+    sys.classList.add("hidden");
+  }
+
+  /* VISUAL PRESSURE */
+  document.body.style.filter=
+    `blur(${entropy>85?1:0}px)`;
+
+  if(entropy<=1){
+    stabilized=true;
+    sys.textContent="ТИ УТРИМАВ СИСТЕМУ.";
+    sys.classList.remove("hidden");
+    hold.textContent="ЗАФІКСОВАНО";
+  }
+
+},80);
 </script>
 
 </body>
