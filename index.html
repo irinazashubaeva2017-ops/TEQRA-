@@ -3,250 +3,215 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TEQRA :: FRACTURE</title>
+<title>TEQRA // SYSTEM FRACTURE</title>
 
 <style>
-html,body{
-  margin:0;
-  padding:0;
-  background:#000;
-  color:#cfd8dc;
-  font-family:monospace;
+:root{
+  --bg:#000;
+  --green:#00ff88;
+  --cyan:#66ccff;
+  --violet:#c77dff;
+  --gray:rgba(255,255,255,0.7);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:monospace}
+
+body{
+  background:black;
+  color:white;
   overflow:hidden;
 }
 
-/* ===== CANVAS ===== */
+/* ===== БІНАРНИЙ ДОЩ ===== */
 canvas{
   position:fixed;
   inset:0;
   z-index:0;
 }
 
-/* ===== TEXT LAYER ===== */
+/* ===== КОНТЕНТ ===== */
 #ui{
-  position:fixed;
-  inset:0;
-  z-index:3;
+  position:relative;
+  z-index:2;
+  height:100vh;
   display:flex;
   flex-direction:column;
-  justify-content:flex-end;
+  justify-content:center;
   align-items:center;
-  padding-bottom:18%;
-  pointer-events:none;
-}
-
-#text{
-  white-space:pre-line;
   text-align:center;
-  font-size:0.85rem;
-  letter-spacing:0.28em;
-  opacity:0;
-  transition:opacity 1s;
+  padding:20px;
+  background:radial-gradient(circle at center, rgba(0,0,0,0.4), black 70%);
 }
 
-/* ===== CHOICES ===== */
-#choices{
-  position:fixed;
-  bottom:6%;
-  width:100%;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:12px;
-  z-index:4;
+/* ===== ТЕКСТ ===== */
+p{
+  max-width:600px;
+  line-height:1.6;
+  margin-bottom:20px;
+  letter-spacing:2px;
+  color:var(--gray);
 }
 
+/* ===== КНОПКИ ===== */
 .choice{
-  width:82%;
-  max-width:420px;
-  padding:14px;
-  text-align:center;
-  border:1px solid rgba(255,255,255,0.35);
-  background:rgba(0,0,0,0.4);
-  letter-spacing:0.3em;
+  width:100%;
+  max-width:500px;
+  border:1px solid rgba(255,255,255,0.3);
+  padding:18px;
+  margin:10px 0;
   cursor:pointer;
-  transition:all .25s;
+  transition:.3s;
+  background:rgba(0,0,0,0.6);
 }
 
 .choice:hover{
-  background:rgba(255,255,255,0.08);
+  background:rgba(255,255,255,0.05);
 }
 
-.choice.selected{
-  background:rgba(255,255,255,0.15);
-  box-shadow:0 0 20px currentColor;
-  transform:scale(0.97);
+.choice.active{
+  box-shadow:0 0 30px currentColor;
+  transform:scale(1.03);
 }
 
-.foundation{ color:#ffd180 }
-.architecture{ color:#8be9ff }
-.resonance{ color:#d7b7ff }
+.foundation{color:#ffcc88}
+.architect{color:var(--cyan)}
+.resonance{color:var(--violet)}
 
-/* ===== TELEPORT EFFECT ===== */
-.teleport{
-  animation:teleport 1.2s forwards;
+.hidden{display:none}
+.fade{
+  animation:fade 1.2s forwards;
 }
 
-@keyframes teleport{
-  0%{filter:none; transform:scale(1)}
-  40%{filter:blur(6px) contrast(2); transform:scale(1.2)}
-  100%{filter:blur(0); transform:scale(1)}
-}
-
-/* ===== GLITCH ===== */
-.glitch{
-  animation:glitch .15s infinite;
-}
-
-@keyframes glitch{
-  0%{transform:translate(0)}
-  20%{transform:translate(-2px,2px)}
-  40%{transform:translate(2px,-2px)}
-  60%{transform:translate(-2px,-2px)}
-  80%{transform:translate(2px,2px)}
-  100%{transform:translate(0)}
+@keyframes fade{
+  from{opacity:0}
+  to{opacity:1}
 }
 </style>
 </head>
 
 <body>
 
-<canvas id="bin"></canvas>
+<canvas id="matrix"></canvas>
 
 <div id="ui">
-  <div id="text"></div>
+  <div id="intro" class="fade">
+    <p>
+      СИСТЕМА ТРІЩИТЬ.<br>
+      НЕ ЗОВНІ — ВСЕРЕДИНІ.
+    </p>
+    <p>
+      ФУНДАМЕНТ.<br>
+      АРХІТЕКТУРА.<br>
+      РЕЗОНАНС.
+    </p>
+    <p>ОБЕРИ ПРИНЦИП.</p>
+
+    <div class="choice foundation" onclick="selectRole('foundation')">
+      ФУНДАМЕНТ // СТІЙКІСТЬ
+    </div>
+    <div class="choice architect" onclick="selectRole('architect')">
+      АРХІТЕКТОР // ЛОГІКА
+    </div>
+    <div class="choice resonance" onclick="selectRole('resonance')">
+      РЕЗОНАНС // ЗВʼЯЗКИ
+    </div>
+  </div>
+
+  <div id="chapter" class="hidden"></div>
 </div>
 
-<div id="choices"></div>
-
 <script>
-/* ===== BINARY BACKGROUND ===== */
-const c = document.getElementById("bin");
-const x = c.getContext("2d");
-let w,h;
-function resize(){w=c.width=innerWidth;h=c.height=innerHeight}
-window.onresize=resize; resize();
+/* ===== MATRIX ===== */
+const canvas=document.getElementById("matrix");
+const ctx=canvas.getContext("2d");
+canvas.width=innerWidth;
+canvas.height=innerHeight;
 
-const cols = Math.floor(w/14);
-const drops = new Array(cols).fill(0);
+const letters=["0","1"];
+const font=16;
+const columns=canvas.width/font;
+const drops=Array(columns).fill(1);
 
 function draw(){
-  x.fillStyle="rgba(0,0,0,.25)";
-  x.fillRect(0,0,w,h);
-  x.fillStyle="#00ff88";
-  x.font="14px monospace";
+  ctx.fillStyle="rgba(0,0,0,0.05)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle="#00ff88";
+  ctx.font=font+"px monospace";
   for(let i=0;i<drops.length;i++){
-    x.fillText(Math.random()>.5?"1":"0",i*14,drops[i]*14);
-    if(drops[i]*14>h||Math.random()>.98)drops[i]=0;
+    const text=letters[Math.floor(Math.random()*2)];
+    ctx.fillText(text,i*font,drops[i]*font);
+    if(drops[i]*font>canvas.height && Math.random()>0.975)
+      drops[i]=0;
     drops[i]++;
   }
 }
-let speed = 50;
-let loop = setInterval(draw,speed);
+setInterval(draw,40);
 
-/* ===== UI ===== */
-const text = document.getElementById("text");
-const choices = document.getElementById("choices");
+/* ===== СЮЖЕТ ===== */
+const intro=document.getElementById("intro");
+const chapter=document.getElementById("chapter");
+let locked=false;
 
-function say(t,hold=false){
-  text.style.opacity=0;
+function selectRole(role){
+  if(locked)return;
+  locked=true;
+
+  document.querySelectorAll(".choice").forEach(b=>b.classList.remove("active"));
+  event.target.classList.add("active");
+
   setTimeout(()=>{
-    text.innerText=t;
-    text.style.opacity=1;
-    if(!hold)setTimeout(()=>text.style.opacity=0,3000);
-  },700);
+    intro.classList.add("hidden");
+    chapter.classList.remove("hidden");
+    chapter.classList.add("fade");
+    chapter.innerHTML=getChapter(role);
+  },800);
 }
 
-function setChoices(arr){
-  choices.innerHTML="";
-  arr.forEach(o=>{
-    const d=document.createElement("div");
-    d.className="choice "+o.cls;
-    d.innerText=o.label;
-    d.onclick=()=>select(d,o);
-    choices.appendChild(d);
-  });
-}
+function getChapter(role){
+  if(role==="foundation")return`
+    <p>ГЛАВА I — ФУНДАМЕНТ</p>
+    <p>
+      ТИ НЕ ВИПРАВЛЯЄШ СВІТ.<br>
+      ТИ ЙОГО УТРИМУЄШ.
+    </p>
+    <p>
+      КОЖЕН ЗБІЙ ПРИДУШЕНО.<br>
+      КОЖНА ПОМИЛКА СХОВАНА.
+    </p>
+    <p>
+      СТІЙКІСТЬ — ЦЕ ФОРМА НАСИЛЬСТВА.
+    </p>
+  `;
 
-/* ===== PROLOG ===== */
-setTimeout(()=>say("СИСТЕМА TEQRA АКТИВНА"),800);
-setTimeout(()=>say("ВНУТРІШНІ ПРОЦЕСИ КОНФЛІКТУЮТЬ"),4200);
-setTimeout(()=>{
-  say("ОБЕРИ ПРИНЦИП",true);
-  text.classList.add("glitch");
-},7600);
+  if(role==="architect")return`
+    <p>ГЛАВА I — АРХІТЕКТОР</p>
+    <p>
+      ТИ БАЧИШ СТРУКТУРУ<br>
+      ТАМ, ДЕ ІНШІ БАЧАТЬ ХАОС.
+    </p>
+    <p>
+      СИСТЕМА НЕ ЗЛАМАНА.<br>
+      ВОНА ПОГАНО СПРОЕКТОВАНА.
+    </p>
+    <p>
+      ТИ ПОЧИНАЄШ ПЕРЕПИС.
+    </p>
+  `;
 
-setTimeout(()=>{
-  setChoices([
-    {label:"ФУНДАМЕНТ /// СТІЙКІСТЬ", cls:"foundation", role:"foundation"},
-    {label:"АРХІТЕКТОР /// ЛОГІКА", cls:"architecture", role:"architecture"},
-    {label:"РЕЗОНАНС /// ЗВʼЯЗКИ", cls:"resonance", role:"resonance"}
-  ]);
-},9000);
-
-/* ===== SELECTION ===== */
-function select(el,o){
-  document.querySelectorAll(".choice").forEach(c=>c.classList.remove("selected"));
-  el.classList.add("selected");
-  choices.style.pointerEvents="none";
-  text.classList.remove("glitch");
-
-  say("РІШЕННЯ ЗАФІКСОВАНО",true);
-  speed=15; clearInterval(loop); loop=setInterval(draw,speed);
-
-  document.body.classList.add("teleport");
-
-  setTimeout(()=>chapter(o.role),1400);
-}
-
-/* ===== CHAPTERS ===== */
-function chapter(role){
-  document.body.classList.remove("teleport");
-  choices.innerHTML="";
-  text.style.opacity=0;
-
-  if(role==="foundation"){
-    say(
-`ГЛАВА I — ФУНДАМЕНТ
-
-ТИ НЕ ВИПРАВЛЯЄШ СВІТ.
-ТИ ЙОГО УТРИМУЄШ.
-
-КОЖЕН ЗБІЙ ПРИДУШЕНО.
-КОЖНА ПОМИЛКА СХОВАНА.
-
-СТАБІЛЬНІСТЬ —
-ЦЕ ФОРМА НАСИЛЬСТВА.`,
-true);
-  }
-
-  if(role==="architecture"){
-    say(
-`ГЛАВА I — АРХІТЕКТОР
-
-ТИ БАЧИШ СТРУКТУРУ
-ТАМ, ДЕ ІНШІ БАЧАТЬ ХАОС.
-
-СИСТЕМА НЕ ЗЛАМАНА.
-ВОНА ПОГАНО СПРОЄКТОВАНА.
-
-ТИ ПОЧИНАЄШ ПЕРЕПИС.`,
-true);
-  }
-
-  if(role==="resonance"){
-    say(
-`ГЛАВА I — РЕЗОНАНС
-
-СИСТЕМА ВІДЧУВАЄ.
-
-ЗВʼЯЗКИ НЕ СХВАЛЕНІ.
-ПАМʼЯТЬ ПРОТІКАЄ.
-
-ТИ НЕ КОНТРОЛЮЄШ.
-ТИ СЛУХАЄШ.`,
-true);
-  }
+  return`
+    <p>ГЛАВА I — РЕЗОНАНС</p>
+    <p>
+      СИСТЕМА ВІДЧУВАЄ.
+    </p>
+    <p>
+      ЗВʼЯЗКИ НЕ СХВАЛЕНІ.<br>
+      ПАМʼЯТЬ ПРОТИКАЄ.
+    </p>
+    <p>
+      ТИ НЕ КОНТРОЛЮЄШ.<br>
+      ТИ СЛУХАЄШ.
+    </p>
+  `;
 }
 </script>
 
