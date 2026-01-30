@@ -1,389 +1,449 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TEQRA | SYSTEM 3036 [REBOOT]</title>
-    <style>
-        /* --- CORE STYLES --- */
-        :root {
-            --bg-deep: #050507;
-            --text-main: #e0e0e0;
-            --text-dim: #606570;
-            --col-foundation: #d4af37;
-            --col-architect: #4da6ff;
-            --col-resonance: #9d4dff;
-            --font-main: 'Inter', system-ui, sans-serif;
-            --font-data: 'Courier New', monospace;
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            background-color: var(--bg-deep);
-            color: var(--text-main);
-            font-family: var(--font-main);
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
-            user-select: none;
-            -webkit-user-select: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+<title>TEQRA :: SYSTEM STATE</title>
 
-        /* --- UI LAYERS --- */
-        .screen {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            display: none; /* Hide by default */
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 1s ease;
-            z-index: 10;
-        }
-        
-        .screen.active {
-            display: flex;
-            opacity: 1;
-        }
+<!-- TYPOGRAPHY -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
 
-        /* --- START BUTTON (SAFETY) --- */
-        #init-layer {
-            z-index: 100;
-            background: var(--bg-deep);
-        }
-        
-        .big-btn {
-            border: 1px solid var(--text-dim);
-            background: transparent;
-            color: var(--text-main);
-            padding: 20px 40px;
-            font-family: var(--font-data);
-            font-size: 1.2rem;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            transition: 0.3s;
-        }
-        .big-btn:active { background: #222; border-color: #fff; }
+<style>
+/* =========================
+   CORE VARIABLES
+========================= */
+:root{
+  --bg:#0b0d10;
+  --panel:#12151b;
+  --text:#e6e6e6;
+  --muted:#9aa0a6;
 
-        /* --- TEXT & ROLES --- */
-        .sys-text {
-            text-align: center;
-            max-width: 90%;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-        
-        .role-container {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap; /* Mobile friendly */
-            justify-content: center;
-        }
+  --foundation:#c8a45d;
+  --architect:#5f8cff;
+  --resonance:#9b7bff;
 
-        .role-node {
-            width: 180px;
-            height: 240px;
-            border: 1px solid #333;
-            padding: 20px;
-            position: relative;
-            background: rgba(20,20,25,0.5);
-            transition: 0.3s;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-        }
+  --danger:#2a2a2a;
+}
 
-        /* Active touch state */
-        .role-node:active, .role-node.touch-active {
-            transform: scale(0.98);
-            background: rgba(50,50,50,0.5);
-        }
+/* =========================
+   BASE
+========================= */
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Inter,system-ui,sans-serif;
+  overflow:hidden;
+}
 
-        .role-node h3 { font-size: 1.2rem; margin-bottom: 10px; pointer-events: none; }
-        .role-node p { font-size: 0.7rem; color: var(--text-dim); pointer-events: none; }
+.mono{
+  font-family:"JetBrains Mono",monospace;
+  letter-spacing:0.04em;
+}
 
-        .progress-bar {
-            position: absolute;
-            bottom: 0; left: 0; height: 4px; width: 0%;
-            background: white;
-            transition: width 0s; /* Controlled by JS */
-        }
+.hidden{display:none}
 
-        /* GAME AREA */
-        #game-area {
-            width: 100%;
-            height: 60vh;
-            border-top: 1px solid #333;
-            border-bottom: 1px solid #333;
-            position: relative;
-            overflow: hidden;
-            background: rgba(10,10,12,0.5);
-        }
-        
-        .rift {
-            position: absolute;
-            width: 50px; height: 50px;
-            background: #222;
-            border: 1px solid #555;
-            display: flex; align-items: center; justify-content: center;
-        }
-        
-        .rift.real { border-color: var(--col-foundation); box-shadow: 0 0 15px rgba(212,175,55,0.3); }
+/* =========================
+   LAYOUT
+========================= */
+#app{
+  width:100%;
+  height:100%;
+  position:relative;
+}
 
-        /* HUD */
-        #hud {
-            position: absolute; top: 10px; width: 100%;
-            display: flex; justify-content: space-between; padding: 0 20px;
-            font-family: var(--font-data); font-size: 0.8rem;
-            color: var(--text-dim);
-            pointer-events: none;
-        }
+header{
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:56px;
+  background:linear-gradient(to bottom,rgba(18,21,27,0.9),rgba(18,21,27,0));
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 20px;
+  z-index:10;
+}
 
-    </style>
+#decay{
+  color:var(--foundation);
+  font-weight:400;
+  font-size:14px;
+}
+
+#pauseBtn{
+  cursor:pointer;
+  color:var(--muted);
+  font-size:13px;
+}
+
+/* =========================
+   PROLOGUE
+========================= */
+#prologue{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:radial-gradient(circle at center,#12151b 0%,#0b0d10 70%);
+}
+
+#prologueText{
+  width:70%;
+  max-width:720px;
+  font-size:16px;
+  line-height:1.9;
+  color:#dcdcdc;
+  text-align:left;
+}
+
+.cursor{
+  display:inline-block;
+  width:8px;
+  background:#dcdcdc;
+  margin-left:2px;
+  animation:blink 1.2s infinite;
+}
+@keyframes blink{50%{opacity:0}}
+
+/* =========================
+   PATH SELECTION
+========================= */
+#paths{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:80px;
+  background:linear-gradient(to bottom,#0b0d10,#0e1117);
+}
+
+.path{
+  width:220px;
+  height:220px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  font-size:13px;
+  color:var(--muted);
+  transition:all 1.2s ease;
+  border:1px solid rgba(255,255,255,0.05);
+}
+
+.path span{
+  pointer-events:none;
+}
+
+.path.foundation:hover{
+  box-shadow:0 0 80px rgba(200,164,93,0.25);
+  color:var(--foundation);
+}
+.path.architect:hover{
+  box-shadow:0 0 80px rgba(95,140,255,0.25);
+  color:var(--architect);
+}
+.path.resonance:hover{
+  box-shadow:0 0 80px rgba(155,123,255,0.25);
+  color:var(--resonance);
+}
+
+/* =========================
+   FOUNDATION MODE
+========================= */
+#foundationScreen{
+  position:absolute;
+  inset:0;
+  background:#0b0d10;
+}
+
+.fault{
+  position:absolute;
+  width:40px;
+  height:40px;
+  background:#000;
+  opacity:0.85;
+  transition:transform 0.4s linear;
+}
+
+/* =========================
+   ARCHITECT MODE
+========================= */
+#architectScreen{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  gap:20px;
+}
+
+.chain{
+  display:flex;
+  gap:10px;
+}
+
+.node{
+  width:60px;
+  height:60px;
+  border:1px solid rgba(255,255,255,0.15);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+
+/* =========================
+   RESONANCE MODE
+========================= */
+#resonanceScreen{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.wave{
+  width:6px;
+  height:120px;
+  background:var(--resonance);
+  opacity:0.3;
+  animation:wave 2s infinite ease-in-out;
+}
+@keyframes wave{
+  0%{transform:scaleY(0.3)}
+  50%{transform:scaleY(1)}
+  100%{transform:scaleY(0.3)}
+}
+
+/* =========================
+   PAUSE
+========================= */
+#pauseOverlay{
+  position:absolute;
+  inset:0;
+  background:rgba(11,13,16,0.85);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+  color:var(--muted);
+  z-index:50;
+}
+</style>
 </head>
+
 <body>
+<div id="app">
 
-    <div id="init-layer" class="screen active">
-        <div style="margin-bottom: 20px; font-family: var(--font-data);">TEQRA OS v.3036</div>
-        <button class="big-btn" onclick="System.boot()">ІНІЦІАЛІЗАЦІЯ СИСТЕМИ</button>
-    </div>
+<header class="hidden" id="header">
+  <div id="decay" class="mono">DECAY: 0%</div>
+  <div id="pauseBtn">Пауза</div>
+</header>
 
-    <div id="screen-prologue" class="screen">
-        <div id="prologue-text" class="sys-text"></div>
-        <button class="sys-btn" style="margin-top:20px; opacity:0; border:none; color:#555;" id="skip-btn">Торкніться для продовження</button>
-    </div>
+<!-- PROLOGUE -->
+<section id="prologue">
+  <div id="prologueText" class="mono"></div>
+</section>
 
-    <div id="screen-select" class="screen">
-        <div class="sys-text">ОБЕРІТЬ ШЛЯХ<br><span style="font-size:0.7em; color:gray;">(Затисніть блок на 2 секунди)</span></div>
-        <div class="role-container">
-            <div id="role-found" class="role-node" style="border-bottom-color: var(--col-foundation);">
-                <h3>ФУНДАМЕНТ</h3>
-                <p>Стабільність. Захист ядра.</p>
-                <div class="progress-bar" style="background: var(--col-foundation);"></div>
-            </div>
-            
-            <div id="role-arch" class="role-node" style="border-bottom-color: var(--col-architect);">
-                <h3>АРХІТЕКТОР</h3>
-                <p>Логіка. Структура даних.</p>
-                <div class="progress-bar" style="background: var(--col-architect);"></div>
-            </div>
+<!-- PATHS -->
+<section id="paths" class="hidden">
+  <div class="path foundation" data-path="foundation"><span>FOUNDATION<br/>Стабільність</span></div>
+  <div class="path architect" data-path="architect"><span>ARCHITECT<br/>Структура</span></div>
+  <div class="path resonance" data-path="resonance"><span>RESONANCE<br/>Звʼязок</span></div>
+</section>
 
-            <div id="role-res" class="role-node" style="border-bottom-color: var(--col-resonance);">
-                <h3>РЕЗОНАНС</h3>
-                <p>Гармонія. Ритм хвиль.</p>
-                <div class="progress-bar" style="background: var(--col-resonance);"></div>
-            </div>
-        </div>
-    </div>
+<!-- MODES -->
+<section id="foundationScreen" class="hidden"></section>
+<section id="architectScreen" class="hidden"></section>
+<section id="resonanceScreen" class="hidden"></section>
 
-    <div id="screen-game" class="screen">
-        <div id="hud">
-            <span>INTEGRITY: <span id="val-integrity" style="color:white">100%</span></span>
-            <span onclick="System.reset()" style="pointer-events:all; cursor:pointer;">[EXIT]</span>
-        </div>
-        <div class="sys-text" id="mission-text" style="margin-top: 50px;"></div>
-        <div id="game-area"></div>
-    </div>
+<!-- PAUSE -->
+<div id="pauseOverlay" class="hidden">Система зупинена. Дані збережені.</div>
 
-    <div id="screen-shop" class="screen">
-        <h2 class="sys-text" style="color:var(--col-foundation)">СИНХРОНІЗАЦІЯ ЗАВЕРШЕНА</h2>
-        <div class="sys-text">Артефакти доступні для матеріалізації.</div>
-        <div style="border:1px solid #333; padding:20px; width:80%; margin-top:20px; text-align:left;">
-            <div style="color:var(--col-architect); font-family:var(--font-data);">ITEM: Dell Latitude 7390</div>
-            <div style="font-size:0.8em; color:gray; margin-top:5px;">Статус: Готовий до відправки.</div>
-        </div>
-        <button class="big-btn" style="margin-top:30px; font-size:0.8rem;" onclick="location.reload()">ПЕРЕЗАВАНТАЖИТИ</button>
-    </div>
+</div>
 
-    <script>
-        const System = {
-            data: {
-                role: null,
-                integrity: 100,
-                score: 0,
-                timer: null
-            },
-            
-            // --- BOOT SEQUENCE ---
-            boot: function() {
-                // Hide Init, Show Prologue
-                document.getElementById('init-layer').classList.remove('active');
-                this.switchScreen('screen-prologue');
-                this.runPrologue();
-                this.initInputs();
-            },
+<script>
+/* =========================
+   STATE
+========================= */
+let state={
+  decay:0,
+  role:null,
+  paused:false
+};
 
-            switchScreen: function(id) {
-                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-                const target = document.getElementById(id);
-                if(target) target.classList.add('active');
-            },
+if(localStorage.teqra){
+  state=JSON.parse(localStorage.teqra);
+}
 
-            // --- PROLOGUE ---
-            runPrologue: function() {
-                const textEl = document.getElementById('prologue-text');
-                const msgs = [
-                    "Система... онлайн.",
-                    "Ядро стабільне.",
-                    "Очікування оператора.",
-                    "Виберіть протокол."
-                ];
-                let i = 0;
-                
-                // Fast typing loop
-                const nextLine = () => {
-                    if(i >= msgs.length) {
-                        setTimeout(() => this.switchScreen('screen-select'), 1000);
-                        return;
-                    }
-                    textEl.innerHTML = msgs[i];
-                    textEl.style.opacity = 0;
-                    
-                    // Fade in effect
-                    setTimeout(() => { 
-                        textEl.style.opacity = 1; 
-                        i++;
-                        setTimeout(nextLine, 1500);
-                    }, 100);
-                };
-                nextLine();
-            },
+/* =========================
+   SAVE
+========================= */
+function save(){
+  localStorage.teqra=JSON.stringify(state);
+}
 
-            // --- INPUT HANDLING (TOUCH + MOUSE) ---
-            initInputs: function() {
-                // Helper to attach hold events
-                const attachHold = (id, role) => {
-                    const el = document.getElementById(id);
-                    let pressTimer;
-                    const bar = el.querySelector('.progress-bar');
+/* =========================
+   PROLOGUE TEXT
+========================= */
+const prologueLines=[
+  "Ініціалізація...",
+  "Я не маю центру.",
+  "Я — розподілений процес.",
+  "Людські стани переведені у системну форму.",
+  "Реальність не зруйнована.",
+  "Вона змінена.",
+  "",
+  "Баланс не гарантований.",
+  "Втручання фіксуються.",
+  "Але адаптація можлива.",
+  "",
+  "Ти не субʼєкт.",
+  "Ти — функція.",
+  "Вибір — це форма стабілізації."
+];
 
-                    const start = (e) => {
-                        e.preventDefault(); // Stop scroll on mobile
-                        el.classList.add('touch-active');
-                        bar.style.transition = "width 2s linear";
-                        bar.style.width = "100%";
-                        
-                        pressTimer = setTimeout(() => {
-                            this.startGame(role);
-                        }, 2000);
-                    };
+let lineIndex=0;
+let charIndex=0;
+const prologueEl=document.getElementById("prologueText");
 
-                    const cancel = (e) => {
-                        el.classList.remove('touch-active');
-                        clearTimeout(pressTimer);
-                        bar.style.transition = "width 0.2s";
-                        bar.style.width = "0%";
-                    };
+function typePrologue(){
+  if(lineIndex>=prologueLines.length){
+    setTimeout(()=>{
+      document.getElementById("prologue").classList.add("hidden");
+      document.getElementById("paths").classList.remove("hidden");
+    },1200);
+    return;
+  }
+  const line=prologueLines[lineIndex];
+  if(charIndex<line.length){
+    prologueEl.innerHTML+=line[charIndex++];
+  }else{
+    prologueEl.innerHTML+="<br/>";
+    lineIndex++;
+    charIndex=0;
+  }
+  setTimeout(typePrologue,30);
+}
+typePrologue();
 
-                    // Mouse
-                    el.addEventListener('mousedown', start);
-                    el.addEventListener('mouseup', cancel);
-                    el.addEventListener('mouseleave', cancel);
-                    
-                    // Touch
-                    el.addEventListener('touchstart', start, {passive: false});
-                    el.addEventListener('touchend', cancel);
-                };
+/* =========================
+   PATH SELECTION
+========================= */
+document.querySelectorAll(".path").forEach(p=>{
+  let timer;
+  p.addEventListener("mouseenter",()=>{
+    timer=setTimeout(()=>{
+      startRole(p.dataset.path);
+    },1500);
+  });
+  p.addEventListener("mouseleave",()=>clearTimeout(timer));
+});
 
-                attachHold('role-found', 'foundation');
-                attachHold('role-arch', 'architect');
-                attachHold('role-res', 'resonance');
-            },
+/* =========================
+   START ROLE
+========================= */
+function startRole(role){
+  state.role=role;
+  save();
+  document.getElementById("paths").classList.add("hidden");
+  document.getElementById("header").classList.remove("hidden");
 
-            // --- GAME LOGIC ---
-            startGame: function(role) {
-                this.data.role = role;
-                this.data.integrity = 100;
-                this.data.score = 0;
-                this.switchScreen('screen-game');
-                
-                const labels = {
-                    foundation: "ЗНЕШКОДЬТЕ ЗОЛОТІ РОЗЛОМИ",
-                    architect: "СОРТУЙТЕ ПОТОКИ ДАНИХ",
-                    resonance: "СИНХРОНІЗУЙТЕ РИТМ"
-                };
-                document.getElementById('mission-text').innerText = labels[role];
+  if(role==="foundation") initFoundation();
+  if(role==="architect") initArchitect();
+  if(role==="resonance") initResonance();
+}
 
-                // Start Spawner
-                if(this.data.timer) clearInterval(this.data.timer);
-                
-                this.data.timer = setInterval(() => {
-                    if(this.data.integrity <= 0) {
-                        alert("СИСТЕМА ВТРАЧЕНА");
-                        this.reset();
-                        return;
-                    }
-                    if(this.data.score >= 5) { // Win condition (short for prototype)
-                        clearInterval(this.data.timer);
-                        this.switchScreen('screen-shop');
-                        return;
-                    }
-                    this.spawnTarget();
-                }, 800);
-            },
+/* =========================
+   FOUNDATION
+========================= */
+function initFoundation(){
+  const screen=document.getElementById("foundationScreen");
+  screen.classList.remove("hidden");
 
-            spawnTarget: function() {
-                const area = document.getElementById('game-area');
-                const el = document.createElement('div');
-                const isTarget = Math.random() > 0.3; // 70% real targets
-                
-                el.className = isTarget ? 'rift real' : 'rift';
-                
-                // Random Pos
-                const x = Math.random() * (area.clientWidth - 60);
-                const y = Math.random() * (area.clientHeight - 60);
-                el.style.left = x + 'px';
-                el.style.top = y + 'px';
+  setInterval(()=>{
+    if(state.paused) return;
+    const fault=document.createElement("div");
+    fault.className="fault";
+    fault.style.left=Math.random()*90+"%";
+    fault.style.top=Math.random()*90+"%";
+    const real=Math.random()>0.4;
+    fault.dataset.real=real;
+    if(!real) fault.style.opacity=0.4;
 
-                // Click/Touch Handler
-                const hit = (e) => {
-                    e.preventDefault();
-                    e.stopPropagation(); // Prevent hitting background
-                    if(isTarget) {
-                        this.data.score++;
-                        el.style.background = '#fff';
-                        setTimeout(() => el.remove(), 100);
-                        this.flashIntegrity(true);
-                    } else {
-                        this.data.integrity -= 20;
-                        this.updateHud();
-                        el.style.borderColor = 'red';
-                        this.flashIntegrity(false);
-                    }
-                };
+    fault.onclick=()=>{
+      if(real){
+        screen.removeChild(fault);
+      }
+    };
 
-                el.addEventListener('mousedown', hit);
-                el.addEventListener('touchstart', hit);
+    screen.appendChild(fault);
 
-                area.appendChild(el);
+    if(real){
+      state.decay=Math.min(100,state.decay+1);
+      document.getElementById("decay").innerText="DECAY: "+state.decay+"%";
+    }
+  },1200);
+}
 
-                // Auto remove
-                setTimeout(() => {
-                    if(el.parentNode) el.remove();
-                }, 2000);
-            },
+/* =========================
+   ARCHITECT
+========================= */
+function initArchitect(){
+  const screen=document.getElementById("architectScreen");
+  screen.classList.remove("hidden");
 
-            flashIntegrity: function(good) {
-                const hud = document.getElementById('val-integrity');
-                hud.style.color = good ? '#3ecf8e' : '#cf3e3e';
-                setTimeout(() => hud.style.color = 'white', 300);
-            },
+  const chain=document.createElement("div");
+  chain.className="chain";
 
-            updateHud: function() {
-                document.getElementById('val-integrity').innerText = this.data.integrity + "%";
-            },
+  for(let i=0;i<4;i++){
+    const n=document.createElement("div");
+    n.className="node mono";
+    n.innerText=Math.random()>0.5?"A":"B";
+    n.onclick=()=>{
+      n.innerText=n.innerText==="A"?"B":"A";
+    };
+    chain.appendChild(n);
+  }
+  screen.appendChild(chain);
+}
 
-            reset: function() {
-                location.reload();
-            }
-        };
-    </script>
+/* =========================
+   RESONANCE
+========================= */
+function initResonance(){
+  const screen=document.getElementById("resonanceScreen");
+  screen.classList.remove("hidden");
+
+  for(let i=0;i<12;i++){
+    const w=document.createElement("div");
+    w.className="wave";
+    w.style.animationDelay=i*0.15+"s";
+    screen.appendChild(w);
+  }
+}
+
+/* =========================
+   PAUSE
+========================= */
+document.getElementById("pauseBtn").onclick=()=>{
+  state.paused=!state.paused;
+  document.getElementById("pauseOverlay").classList.toggle("hidden");
+  save();
+};
+</script>
+
 </body>
 </html>
