@@ -3,106 +3,97 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TEQRA | ФУНДАМЕНТ</title>
+<title>TEQRA — ФУНДАМЕНТ</title>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{
-    background:#070709;
-    color:#e0e0e5;
+    background:#050507;
+    color:#d8d8dd;
     font-family: monospace;
     overflow:hidden;
 }
 
-/* ===== БІНАРНИЙ ШУМ ===== */
+/* ===== БІНАРНИЙ ХАОС ===== */
 #binary{
     position:fixed;
     inset:0;
-    pointer-events:none;
-    font-size:13px;
+    font-size:14px;
     line-height:16px;
-    opacity:.12;
+    opacity:.18;
+    pointer-events:none;
     white-space:pre;
+    animation: drift 6s infinite alternate;
+}
+@keyframes drift{
+    from{transform:translate(0,0)}
+    to{transform:translate(-40px,30px)}
 }
 
-/* ===== ОСНОВНИЙ БЛОК ===== */
+/* ===== ОСНОВА ===== */
 #ui{
     position:relative;
-    max-width:800px;
-    margin:7vh auto;
+    max-width:760px;
+    margin:6vh auto;
     padding:40px;
-    background:rgba(10,10,15,.75);
-    border:1px solid rgba(255,255,255,.15);
+    background:rgba(8,8,12,.82);
+    border:1px solid rgba(255,255,255,.12);
     backdrop-filter:blur(6px);
     z-index:10;
 }
 
 .system{
-    font-size:13px;
-    letter-spacing:.25em;
+    font-size:12px;
+    letter-spacing:.35em;
     opacity:.6;
-    margin-bottom:20px;
+    margin-bottom:24px;
 }
 
 .text{
     font-size:18px;
     line-height:1.6;
-    margin-bottom:20px;
+    margin-bottom:24px;
 }
 
-/* ===== ВИБІР ===== */
-.choice{
-    border:1px solid rgba(255,255,255,.3);
-    padding:14px;
-    margin-top:12px;
-    cursor:pointer;
-    transition:.25s;
-}
-.choice:hover{background:rgba(255,255,255,.08)}
-.choice.active{
-    background:rgba(255,255,255,.18);
-    border-color:#fff;
-}
-
-/* ===== КНОПКА УТРИМАННЯ ===== */
-#holdBtn{
-    width:160px;
-    height:160px;
+/* ===== КНОПКА ===== */
+#hold{
+    width:170px;
+    height:170px;
     border-radius:50%;
-    border:2px solid #9affc9;
+    border:2px solid #6dffd0;
     margin:30px auto;
     display:flex;
     align-items:center;
     justify-content:center;
-    font-size:14px;
-    letter-spacing:.2em;
-    color:#9affc9;
+    letter-spacing:.25em;
+    color:#6dffd0;
     user-select:none;
 }
 
 /* ===== ПРОГРЕС ===== */
 #bar{
     height:6px;
-    background:rgba(255,255,255,.1);
+    background:rgba(255,255,255,.08);
 }
 #fill{
     height:100%;
-    width:30%;
-    background:#9affc9;
+    width:35%;
+    background:#6dffd0;
     transition:.15s;
 }
 
-/* ===== РОЗЛОМИ ===== */
-.crack{
+/* ===== ПОЛОМКИ ===== */
+.break{
     position:absolute;
-    border:1px solid rgba(255,80,80,.9);
-    padding:6px 10px;
-    font-size:12px;
-    color:#ff6b6b;
+    width:80px;
+    height:40px;
+    background:#000;
+    border:1px solid rgba(255,80,80,.8);
+    box-shadow:0 0 12px rgba(255,0,0,.5);
+    animation:flicker .4s infinite alternate;
     cursor:pointer;
-    animation:flash .8s infinite alternate;
 }
-@keyframes flash{
+@keyframes flicker{
     from{opacity:.4}
     to{opacity:1}
 }
@@ -123,18 +114,21 @@ body{
 
 <body>
 
-<div id="binary"></div>
+<pre id="binary"></pre>
 
 <div id="ui">
-    <div class="system" id="sys">ІНІЦІАЛІЗАЦІЯ СИСТЕМИ</div>
-    <div class="text" id="text"></div>
-    <div id="choices"></div>
+    <div class="system">ПРОТОКОЛ ФУНДАМЕНТУ</div>
 
-    <div id="holdBtn" style="display:none">УТРИМУВАТИ</div>
-
-    <div id="bar" style="display:none">
-        <div id="fill"></div>
+    <div class="text" id="text">
+        Система втрачає центр.<br><br>
+        Дані більше не сходяться в одній точці.<br><br>
+        Ти не виправляєш її.<br>
+        Ти утримуєш вагу.
     </div>
+
+    <div id="hold">УТРИМУВАТИ</div>
+
+    <div id="bar"><div id="fill"></div></div>
 </div>
 
 <script>
@@ -142,92 +136,50 @@ body{
 const binary=document.getElementById("binary");
 setInterval(()=>{
     let out="";
-    for(let i=0;i<900;i++){
-        out+=Math.random()>0.5?"1":"0";
-        if(i%70===0)out+="\n";
+    for(let i=0;i<1000;i++){
+        out+=Math.random()>.5?"1":"0";
+        if(i%80===0)out+="\n";
     }
     binary.textContent=out;
-},250);
+},180);
 
-/* ===== СЦЕНИ ===== */
-const text=document.getElementById("text");
-const choices=document.getElementById("choices");
-const sys=document.getElementById("sys");
-const holdBtn=document.getElementById("holdBtn");
-const bar=document.getElementById("bar");
-const fill=document.getElementById("fill");
-
-let scene="prologue";
+/* ===== СТАН ===== */
 let holding=false;
-let stability=30;
+let stability=35;
+let active=true;
 
-/* ===== ПРОЛОГ ===== */
-text.innerHTML=
-"Ядро нестабільне.<br><br>"+
-"Система більше не тримає форму.<br>"+
-"Потрібна точка опори.";
+/* ===== КНОПКА ===== */
+const hold=document.getElementById("hold");
+hold.addEventListener("mousedown",()=>holding=true);
+hold.addEventListener("mouseup",()=>holding=false);
+hold.addEventListener("touchstart",()=>holding=true);
+hold.addEventListener("touchend",()=>holding=false);
 
-choices.innerHTML=
-"<div class='choice' onclick='select(\"foundation\")'>ФУНДАМЕНТ — утримувати рівновагу</div>"+
-"<div class='choice'>АРХІТЕКТОР — (пізніше)</div>"+
-"<div class='choice'>РЕЗОНАНС — (пізніше)</div>";
-
-function select(path){
-    document.querySelectorAll('.choice').forEach(c=>c.classList.remove('active'));
-    event.target.classList.add('active');
-
-    setTimeout(()=>{
-        startFoundation();
-    },700);
-}
-
-/* ===== ФУНДАМЕНТ ===== */
-function startFoundation(){
-    scene="foundation";
-    sys.textContent="ПРОТОКОЛ ФУНДАМЕНТУ";
-    text.innerHTML=
-    "Стабільність не відновлюється дією.<br>"+
-    "Вона утримується зусиллям.<br><br>"+
-    "Тримай центр. Закривай розломи.";
-
-    choices.innerHTML="";
-    holdBtn.style.display="flex";
-    bar.style.display="block";
-
-    holdBtn.addEventListener("mousedown",()=>holding=true);
-    holdBtn.addEventListener("mouseup",()=>holding=false);
-    holdBtn.addEventListener("touchstart",()=>holding=true);
-    holdBtn.addEventListener("touchend",()=>holding=false);
-
-    setInterval(spawnCrack,2000);
-    requestAnimationFrame(loop);
-}
-
-/* ===== РОЗЛОМИ ===== */
-function spawnCrack(){
-    if(scene!=="foundation")return;
-
-    const c=document.createElement("div");
-    c.className="crack";
-    c.style.left=Math.random()*80+"%";
-    c.style.top=Math.random()*80+"%";
-    c.innerText="РОЗЛОМ";
-
-    c.onclick=()=>{
-        stability+=8;
-        c.remove();
+/* ===== ПОЛОМКИ ===== */
+function spawnBreak(){
+    if(!active) return;
+    const b=document.createElement("div");
+    b.className="break";
+    b.style.left=Math.random()*80+"%";
+    b.style.top=Math.random()*80+"%";
+    b.onclick=()=>{
+        stability+=10;
+        b.remove();
     };
-
-    document.body.appendChild(c);
-    setTimeout(()=>c.remove(),3000);
+    document.body.appendChild(b);
+    setTimeout(()=>b.remove(),2600);
 }
+setInterval(spawnBreak,1700);
 
 /* ===== ЦИКЛ ===== */
+const fill=document.getElementById("fill");
+const text=document.getElementById("text");
+
 function loop(){
-    if(scene!=="foundation")return;
+    if(!active) return;
 
     if(holding){
-        stability+=0.4;
+        stability+=0.35;
         document.body.classList.remove("glitch");
     }else{
         stability-=0.6;
@@ -238,21 +190,25 @@ function loop(){
     fill.style.width=stability+"%";
 
     if(stability<=0){
+        active=false;
         text.innerHTML="СИСТЕМА ЗРУЙНОВАНА.<br>Фундамент втрачено.";
+        document.body.classList.remove("glitch");
         return;
     }
 
     if(stability>=100){
-        document.body.classList.remove("glitch");
+        active=false;
         text.innerHTML=
-        "Стабільність відновлено.<br><br>"+
-        "Ти витримала тиск.<br>"+
+        "Рівновага зафіксована.<br><br>"+
+        "Ти витримала навантаження.<br>"+
         "Фундамент прийняв тебе.";
+        document.body.classList.remove("glitch");
         return;
     }
 
     requestAnimationFrame(loop);
 }
+loop();
 </script>
 
 </body>
