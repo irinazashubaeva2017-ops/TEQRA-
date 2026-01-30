@@ -3,233 +3,269 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEQRA | Пролог</title>
+    <title>TEQRA | System Initialization</title>
     <style>
-        /* ОСНОВНІ НАЛАШТУВАННЯ */
         :root {
-            --bg-color: #050507;
-            --accent-color: #4facfe;
-            --text-color: #e0e0e0;
-            --dim-text: #888;
-            --transition: 1.5s ease-in-out;
+            --bg-color: #020406;
+            --accent-main: #00f2ff; /* Ціановий неон */
+            --accent-secondary: #7000ff; /* Фіолетовий розлом */
+            --text-main: #d1d9e0;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(0, 242, 255, 0.2);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Courier New', Courier, monospace; /* Технологічний стиль */
         }
 
         body {
             background-color: var(--bg-color);
-            color: var(--text-color);
-            overflow: hidden; /* Заборона скролу для атмосфери */
+            color: var(--text-main);
             height: 100vh;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
+            perspective: 1000px;
         }
 
-        /* ФОНОВІ ЕФЕКТИ */
-        .stars {
+        /* ТЕХНОЛОГІЧНИЙ ФОН */
+        .grid {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at center, #1a1a2e 0%, #050507 100%);
-            z-index: -1;
-        }
-
-        .glow {
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            background: var(--accent-color);
-            filter: blur(150px);
+            width: 200%;
+            height: 200%;
+            background-image: 
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 50px 50px;
+            transform: rotateX(60deg) translateY(-50%) translateZ(-200px);
             opacity: 0.15;
-            border-radius: 50%;
-            animation: pulseGlow 8s infinite alternate;
+            z-index: -1;
+            animation: gridMove 20s infinite linear;
         }
 
-        @keyframes pulseGlow {
-            0% { transform: scale(1); opacity: 0.1; }
-            100% { transform: scale(1.5); opacity: 0.2; }
+        @keyframes gridMove {
+            from { background-position: 0 0; }
+            to { background-position: 0 50px; }
+        }
+
+        /* ЕФЕКТ СКАНУВАННЯ */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 2px;
+            background: rgba(0, 242, 255, 0.1);
+            box-shadow: 0 0 10px var(--accent-main);
+            z-index: 100;
+            animation: scanline 4s infinite linear;
+            pointer-events: none;
+        }
+
+        @keyframes scanline {
+            0% { top: -10%; }
+            100% { top: 110%; }
         }
 
         /* КОНТЕЙНЕР ЕКРАНІВ */
         .stage {
-            max-width: 600px;
-            width: 90%;
-            text-align: center;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: var(--transition);
-            pointer-events: none;
             position: absolute;
+            width: 90%;
+            max-width: 700px;
+            padding: 40px;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--accent-main);
+            opacity: 0;
+            transform: scale(0.95) translateZ(-50px);
+            transition: opacity 2s ease, transform 2s ease;
+            pointer-events: none;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
 
         .stage.active {
             opacity: 1;
-            transform: translateY(0);
+            transform: scale(1) translateZ(0);
             pointer-events: all;
         }
 
-        /* ТЕКСТОВІ СТИЛІ */
-        h1 {
-            font-weight: 200;
-            letter-spacing: 8px;
+        /* ТЕКСТ ТА ТИТУЛИ */
+        .system-msg {
+            font-size: 0.7rem;
+            color: var(--accent-main);
+            margin-bottom: 10px;
             text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            letter-spacing: 5px;
             margin-bottom: 20px;
             color: #fff;
+            text-shadow: 0 0 15px var(--accent-main);
         }
 
         p {
-            line-height: 1.8;
+            line-height: 1.6;
             font-size: 1.1rem;
-            color: var(--dim-text);
+            color: var(--text-main);
         }
 
-        .highlight {
-            color: var(--accent-color);
-            text-shadow: 0 0 10px var(--accent-color);
-        }
-
-        /* ЯДРО */
-        .core-container {
-            margin-bottom: 40px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .core {
-            width: 80px;
-            height: 80px;
-            background: transparent;
-            border: 2px solid var(--accent-color);
-            border-radius: 50%;
-            box-shadow: 0 0 30px var(--accent-color), inset 0 0 20px var(--accent-color);
-            animation: coreRotate 10s infinite linear;
+        /* ТЕХНО-ЯДРО (CORE) */
+        .core-wrap {
             position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 30px;
         }
 
-        .core::after {
-            content: '';
+        .orbit {
+            position: absolute;
+            border: 1px dashed var(--accent-main);
+            border-radius: 50%;
+            width: 100%;
+            height: 100%;
+            animation: rotate 15s infinite linear;
+        }
+
+        .orbit-inner {
+            position: absolute;
+            top: 15%; left: 15%;
+            width: 70%; height: 70%;
+            border: 2px solid var(--accent-secondary);
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: rotate 5s infinite linear reverse;
+        }
+
+        .center-point {
             position: absolute;
             top: 50%; left: 50%;
-            width: 40%; height: 40%;
+            width: 20px; height: 20px;
             background: white;
+            box-shadow: 0 0 30px var(--accent-main), 0 0 60px var(--accent-main);
             border-radius: 50%;
             transform: translate(-50%, -50%);
-            box-shadow: 0 0 20px #fff;
         }
 
-        @keyframes coreRotate {
-            0% { transform: rotate(0deg) scale(1); }
-            50% { transform: rotate(180deg) scale(1.1); }
-            100% { transform: rotate(360deg) scale(1); }
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
         /* КНОПКА */
         .btn {
             margin-top: 40px;
-            padding: 15px 40px;
+            padding: 15px 45px;
             background: transparent;
-            border: 1px solid var(--accent-color);
-            color: var(--accent-color);
-            text-transform: uppercase;
-            letter-spacing: 3px;
+            border: 1px solid var(--accent-main);
+            color: var(--accent-main);
             cursor: pointer;
-            transition: 0.4s;
-            position: relative;
-            overflow: hidden;
+            font-weight: bold;
+            letter-spacing: 2px;
+            transition: 0.5s;
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); /* Трапеція */
         }
 
         .btn:hover {
-            background: var(--accent-color);
+            background: var(--accent-main);
             color: #000;
-            box-shadow: 0 0 30px var(--accent-color);
+            box-shadow: 0 0 20px var(--accent-main);
         }
 
-        /* АДАПТИВНІСТЬ */
-        @media (max-width: 600px) {
-            h1 { font-size: 1.5rem; }
-            p { font-size: 0.95rem; }
+        /* ІНДИКАТОР ЗАВАНТАЖЕННЯ */
+        .loader-bar {
+            width: 100%;
+            height: 2px;
+            background: rgba(255,255,255,0.1);
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .loader-fill {
+            position: absolute;
+            height: 100%;
+            background: var(--accent-main);
+            width: 0%;
+            transition: width 6s linear;
         }
     </style>
 </head>
 <body>
 
-    <div class="stars"></div>
-    <div class="glow"></div>
+    <div class="grid"></div>
 
     <div id="stage1" class="stage active">
-        <h1 class="highlight">TEQRA</h1>
-        <p>У порожнечі немає болю.</p>
-        <p>Тільки тиша... і відлуння системи.</p>
+        <div class="system-msg">> INITIALIZING_CONSCIOUSNESS...</div>
+        <h1>TEQRA PROTOCOL</h1>
+        <p>Система прокидається. <br> Аналіз навколишнього середовища: <span style="color:red;">CRITICAL ERROR</span>.</p>
+        <div class="loader-bar"><div id="fill1" class="loader-fill"></div></div>
     </div>
 
     <div id="stage2" class="stage">
-        <div class="core-container">
-            <div class="core"></div>
+        <div class="system-msg">> DATA_RETRIEVAL: YEAR_2026_REMNANTS</div>
+        <div class="core-wrap">
+            <div class="orbit"></div>
+            <div class="orbit-inner"></div>
+            <div class="center-point"></div>
         </div>
-        <p>Ядро Землі розколоте людською жадобою.<br>
-           Доба триває лише <span class="highlight">5 годин</span>.<br>
-           Світ балансує на межі остаточного збою.
-        </p>
+        <p>Ядро планети виснажене. Світловий день скорочено до 5 годин. Природа перетворилася на алгоритм виживання.</p>
+        <p style="margin-top:10px; font-size: 0.9rem; opacity: 0.7;">Ми відправили Хранителів, щоб стабілізувати ентропію.</p>
+        <div class="loader-bar"><div id="fill2" class="loader-fill"></div></div>
     </div>
 
     <div id="stage3" class="stage">
-        <h1>Ти — Хранитель</h1>
-        <p>Твій прихід був розрахований алгоритмами майбутнього.<br>
-           Відновлення, Логіка або Фундамент — твій шлях визначить долю реальності.
-        </p>
-        <button class="btn" onclick="nextStage()">Почати шлях</button>
+        <div class="system-msg">> ASSIGNING_ROLE: GUARDIAN</div>
+        <h1>Вибраний об'єкт</h1>
+        <p>Ви — точка стабільності в океані хаосу. Ваша присутність у TEQRA не випадкова.</p>
+        <p>Пам'ятайте: смерті немає, лише перезавантаження циклу.</p>
+        <button class="btn" onclick="startJourney()">АКТИВУВАТИ ШЛЯХ</button>
     </div>
 
     <script>
         let currentStage = 1;
-        const totalStages = 3;
 
-        // Автоматичний перехід між першими двома екранами для кінематографічності
-        setTimeout(() => {
-            if(currentStage === 1) nextStage();
-        }, 4000);
-
-        setTimeout(() => {
-            if(currentStage === 2) nextStage();
-        }, 9000);
-
-        function nextStage() {
-            if (currentStage < totalStages) {
-                // Ховаємо поточний екран
-                document.getElementById(`stage${currentStage}`).classList.remove('active');
-                
-                currentStage++;
-                
-                // Показуємо наступний з невеликою затримкою для плавності
+        // Функція для керування прогрес-баром та автоматичним переходом
+        function runSequence() {
+            // Екран 1 -> 2 (через 7 секунд)
+            document.getElementById('fill1').style.width = '100%';
+            setTimeout(() => {
+                changeStage(1, 2);
+                // Екран 2 -> 3 (через 9 секунд)
+                document.getElementById('fill2').style.width = '100%';
                 setTimeout(() => {
-                    document.getElementById(`stage${currentStage}`).classList.add('active');
-                }, 100);
-            } else {
-                // Дія при натисканні фінальної кнопки
-                const btn = document.querySelector('.btn');
-                btn.innerText = "Синхронізація...";
-                btn.style.opacity = "0.5";
-                setTimeout(() => {
-                    alert("Пролог завершено. Ласкаво просимо у TEQRA.");
-                }, 1000);
-            }
+                    changeStage(2, 3);
+                }, 9000); 
+            }, 7000);
         }
 
-        // Легкий паралакс ефект для фону
-        document.addEventListener('mousemove', (e) => {
-            const x = e.clientX / window.innerWidth;
-            const y = e.clientY / window.innerHeight;
-            document.querySelector('.glow').style.transform = 
-                `translate(${x * 50}px, ${y * 50}px)`;
-        });
+        function changeStage(from, to) {
+            document.getElementById(`stage${from}`).classList.remove('active');
+            setTimeout(() => {
+                document.getElementById(`stage${to}`).classList.add('active');
+            }, 1500); // Час на "зникнення" попереднього екрану
+            currentStage = to;
+        }
+
+        function startJourney() {
+            const btn = document.querySelector('.btn');
+            btn.innerHTML = "ЗАВАНТАЖЕННЯ ВСЕСВІТУ...";
+            btn.style.borderColor = "white";
+            setTimeout(() => {
+                alert("Ласкаво просимо, Хранителю. Ваша перша місія: Стабілізація сектору ТЕКРА-1.");
+            }, 1500);
+        }
+
+        // Запуск послідовності при завантаженні
+        window.onload = runSequence;
     </script>
 </body>
 </html>
