@@ -3,38 +3,36 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>TEQRA // SYSTEM</title>
+<title>TEQRA // FOUNDATION</title>
 
 <style>
 :root{
   --bg:#000;
   --green:#00ff9c;
   --amber:#ffb454;
-  --cyan:#6fdcff;
-  --violet:#c77dff;
-  --white:rgba(255,255,255,0.85);
+  --danger:#ff5555;
+  --white:rgba(255,255,255,0.9);
 }
 
-*{box-sizing:border-box;margin:0;padding:0}
+*{margin:0;padding:0;box-sizing:border-box}
 
 body{
   background:var(--bg);
   color:var(--white);
-  font-family: "Courier New", monospace;
+  font-family:"Courier New", monospace;
   height:100vh;
   overflow:hidden;
 }
 
-/* ===== BINARY BACKGROUND ===== */
+/* ===== CHAOTIC MATRIX ===== */
 #matrix{
   position:fixed;
   inset:0;
   z-index:0;
-  opacity:0.25;
-  pointer-events:none;
+  opacity:0.35;
 }
 
-/* ===== MAIN LAYER ===== */
+/* ===== UI ===== */
 #ui{
   position:relative;
   z-index:2;
@@ -45,12 +43,9 @@ body{
   padding:24px;
 }
 
-/* ===== TEXT BLOCK ===== */
 .panel{
   max-width:520px;
-  width:100%;
   text-align:center;
-  animation:fadeIn 1.2s ease forwards;
 }
 
 p{
@@ -59,58 +54,38 @@ p{
   letter-spacing:0.04em;
 }
 
-.system{
-  color:var(--green);
-  opacity:0.9;
-}
-
+.system{color:var(--green)}
+.alert{color:var(--danger)}
 .command{
-  margin-top:40px;
-  color:var(--amber);
+  margin-top:28px;
   letter-spacing:0.3em;
+  color:var(--amber);
   font-weight:bold;
 }
 
-/* ===== OPTIONS ===== */
-.options{
+/* ===== HOLD ZONE ===== */
+#holdZone{
   margin-top:40px;
-  display:flex;
-  flex-direction:column;
-  gap:16px;
+  padding:24px;
+  border:1px solid rgba(255,255,255,0.25);
+  transition:0.2s;
 }
 
-.option{
-  border:1px solid rgba(255,255,255,0.2);
-  padding:16px;
-  cursor:pointer;
-  transition:0.3s;
-  letter-spacing:0.15em;
-}
-
-.option:hover{
+#holdZone.active{
   background:rgba(255,255,255,0.05);
+  border-color:var(--amber);
 }
 
-.option.foundation{color:var(--amber)}
-.option.arch{color:var(--cyan)}
-.option.res{color:var(--violet)}
-
-.option:active{
-  transform:scale(0.97);
+/* ===== SHAKE ===== */
+.shake{
+  animation:shake 0.15s infinite;
 }
-
-/* ===== TRANSITION ===== */
-.fade-out{
-  animation:fadeOut 1s ease forwards;
-}
-
-@keyframes fadeIn{
-  from{opacity:0; transform:translateY(10px)}
-  to{opacity:1; transform:none}
-}
-
-@keyframes fadeOut{
-  to{opacity:0; transform:translateY(-10px)}
+@keyframes shake{
+  0%{transform:translate(0,0)}
+  25%{transform:translate(-2px,1px)}
+  50%{transform:translate(2px,-1px)}
+  75%{transform:translate(-1px,-2px)}
+  100%{transform:translate(0,0)}
 }
 </style>
 </head>
@@ -121,87 +96,101 @@ p{
 
 <div id="ui">
   <div class="panel" id="panel">
-    <p class="system">SYSTEM STATUS: UNSTABLE</p>
-    <p>Система втратила центр.</p>
-    <p>Дані більше не сходяться в одній точці.</p>
-    <p>Розпад відбувається не зовні — всередині.</p>
 
-    <p class="system">RECOVERY REQUIRED</p>
+    <p class="system">FOUNDATION — MISSION 1</p>
+    <p>Система втрачає звʼязність.</p>
+    <p>Процеси розходяться.</p>
 
-    <div class="options">
-      <div class="option foundation" onclick="selectPath('foundation')">
-        ФУНДАМЕНТ // СТІЙКІСТЬ
-      </div>
-      <div class="option arch" onclick="selectPath('arch')">
-        АРХІТЕКТОР // ЛОГІКА
-      </div>
-      <div class="option res" onclick="selectPath('res')">
-        РЕЗОНАНС // ЗВʼЯЗКИ
-      </div>
+    <p class="alert">РІВЕНЬ РОЗПАДУ: <span id="entropy">72%</span></p>
+
+    <p>Твоя задача — не виправляти.</p>
+    <p>Твоя задача — утримувати.</p>
+
+    <div id="holdZone">
+      <p class="command">НАТИСНИ І УТРИМУЙ</p>
     </div>
+
   </div>
 </div>
 
 <script>
-/* ===== MATRIX EFFECT ===== */
-const c = document.getElementById("matrix");
-const ctx = c.getContext("2d");
+/* ===== MATRIX CHAOS ===== */
+const c=document.getElementById("matrix");
+const ctx=c.getContext("2d");
 let w,h;
-function resize(){
-  w=c.width=window.innerWidth;
-  h=c.height=window.innerHeight;
-}
-window.addEventListener("resize",resize);
-resize();
+function resize(){w=c.width=innerWidth;h=c.height=innerHeight}
+addEventListener("resize",resize);resize();
 
-const cols = Math.floor(w/14);
-const drops = Array(cols).fill(0);
+const cols=Math.floor(w/12);
+let drops=Array(cols).fill(0);
 
 function drawMatrix(){
-  ctx.fillStyle="rgba(0,0,0,0.08)";
+  ctx.fillStyle="rgba(0,0,0,0.2)";
   ctx.fillRect(0,0,w,h);
-  ctx.fillStyle="#00ff9c";
   ctx.font="14px monospace";
+
   for(let i=0;i<drops.length;i++){
-    const t = Math.random()>0.5?"1":"0";
-    ctx.fillText(t,i*14,drops[i]*14);
-    if(drops[i]*14>h||Math.random()>0.98) drops[i]=0;
-    drops[i]++;
+    let glitch=Math.random();
+    let char= glitch>0.97 ? "█" : Math.random()>0.5?"1":"0";
+    ctx.fillStyle= glitch>0.95 ? "#ff5555" : "#00ff9c";
+    ctx.fillText(char,i*12,drops[i]*14);
+    if(drops[i]*14>h||Math.random()>0.98)drops[i]=0;
+    drops[i]+=Math.random()*1.5;
   }
 }
-setInterval(drawMatrix,50);
+setInterval(drawMatrix,40);
 
-/* ===== STORY FLOW ===== */
+/* ===== GAME LOGIC ===== */
+let entropy=72;
+let holding=false;
+const entropyEl=document.getElementById("entropy");
 const panel=document.getElementById("panel");
+const hold=document.getElementById("holdZone");
 
-function selectPath(path){
-  panel.classList.add("fade-out");
-  setTimeout(()=>{
-    if(path==="foundation") loadFoundation();
-    else panel.innerHTML="<p class='system'>PATH LOCKED. NOT IMPLEMENTED.</p>";
-    panel.classList.remove("fade-out");
-  },900);
+function update(){
+  if(holding){
+    entropy-=0.35;
+    panel.classList.add("shake");
+  }else{
+    entropy+=0.25;
+    panel.classList.remove("shake");
+  }
+
+  entropy=Math.max(0,Math.min(100,entropy));
+  entropyEl.textContent=Math.floor(entropy)+"%";
+
+  if(entropy<=5){
+    win();
+  }
+}
+setInterval(update,50);
+
+/* ===== INPUT ===== */
+function startHold(e){
+  e.preventDefault();
+  holding=true;
+  hold.classList.add("active");
+}
+function endHold(){
+  holding=false;
+  hold.classList.remove("active");
 }
 
-/* ===== FOUNDATION ARC — CHAPTER 1 ===== */
-function loadFoundation(){
+hold.addEventListener("mousedown",startHold);
+hold.addEventListener("touchstart",startHold,{passive:false});
+addEventListener("mouseup",endHold);
+addEventListener("touchend",endHold);
+
+/* ===== WIN ===== */
+function win(){
+  clearInterval(update);
+  panel.classList.remove("shake");
   panel.innerHTML=`
-    <p class="system">PATH SELECTED: FOUNDATION</p>
-
-    <p>ГЛАВА I — ФУНДАМЕНТ</p>
-
-    <p>Ти не виправляєш світ.</p>
-    <p>Ти не переписуєш помилки.</p>
-
-    <p>Ти залишаєшся.</p>
-
-    <p>Кожен збій проходить крізь тебе.</p>
-    <p>Кожен розрахунок тримається на твоїй присутності.</p>
-
-    <p class="system">TASK:</p>
-    <p>Утримувати систему в моменті розпаду.</p>
-
-    <p class="command">[ ПРОДОВЖИТИ ]</p>
+    <p class="system">СТАБІЛІЗАЦІЯ ДОСЯГНУТА</p>
+    <p>Ти втримав систему.</p>
+    <p>Не силою.</p>
+    <p>Присутністю.</p>
+    <p class="command">ГЛАВА II БУДЕ ПРОДОВЖЕНА</p>
   `;
 }
 </script>
