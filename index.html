@@ -10,9 +10,11 @@
 html,body{width:100%;height:100%;background:#000;color:#eaeaea;font-family:"Courier New",monospace;overflow:hidden}
 
 :root{
- --green:#00ff9c;
- --gold:#ffb86b;
- --red:#ff4d4d;
+--green:#00ff9c;
+--gold:#ffb86b;
+--blue:#66d9ff;
+--violet:#c792ea;
+--red:#ff4d4d;
 }
 
 /* MATRIX */
@@ -20,51 +22,64 @@ canvas{position:fixed;inset:0;z-index:1}
 
 /* SCREENS */
 .screen{
- position:fixed;inset:0;z-index:3;
- display:flex;justify-content:center;align-items:center;
- opacity:0;pointer-events:none;transition:opacity 1s
+position:fixed;inset:0;z-index:3;
+display:flex;justify-content:center;align-items:center;
+opacity:0;pointer-events:none;transition:1s;
 }
 .screen.active{opacity:1;pointer-events:auto}
 
-/* TEXT */
-.panel{text-align:center;max-width:760px;padding:24px}
-.line{margin:14px 0;font-size:18px;opacity:0;transform:translateY(10px);transition:.6s}
-.line.show{opacity:1;transform:none}
+.panel{max-width:760px;padding:24px;text-align:center}
+.line{margin:14px 0;font-size:18px}
 .glitch{animation:glitch 1.3s infinite}
 @keyframes glitch{
- 0%{text-shadow:none}
- 40%{text-shadow:-2px 0 red,2px 0 cyan}
- 100%{text-shadow:none}
+0%{text-shadow:none}
+50%{text-shadow:-2px 0 red,2px 0 cyan}
+100%{text-shadow:none}
 }
 
 /* CHOICES */
 .choice{
- border:2px solid;padding:18px;margin:16px 0;cursor:pointer
+border:2px solid;padding:18px;margin:16px 0;
+cursor:pointer;transition:.25s;
 }
-.choice:hover{background:rgba(255,255,255,.05)}
+.choice:hover{background:rgba(255,255,255,.06)}
 
-/* FOUNDATION */
-#entropyBar{
- position:fixed;top:10px;left:50%;transform:translateX(-50%);
- color:var(--red);z-index:10;font-size:18px
+/* HUD */
+#hud{
+position:fixed;top:12px;left:50%;
+transform:translateX(-50%);
+z-index:6;font-size:18px;
+color:var(--red);letter-spacing:2px;
 }
 
+/* FRACTURES */
 .fracture{
- position:fixed;width:80px;height:80px;
- background:#000;
- border:2px solid var(--red);
- box-shadow:0 0 25px var(--red);
- z-index:6;cursor:pointer;
- animation:pulse 1s infinite
+position:fixed;
+width:90px;height:90px;
+background:#000;
+border:2px solid var(--red);
+box-shadow:0 0 25px var(--red);
+z-index:5;
+animation:pulse 1s infinite;
 }
-.fracture.fake{
- border-style:dashed;
- opacity:.6
+.false{
+border-style:dashed;
+opacity:.6;
 }
 @keyframes pulse{
- 0%{transform:scale(.95)}
- 50%{transform:scale(1.05)}
- 100%{transform:scale(.95)}
+0%{transform:scale(.9)}
+50%{transform:scale(1.1)}
+100%{transform:scale(.9)}
+}
+
+/* SHAKE */
+body.chaos{animation:shake .12s infinite}
+@keyframes shake{
+0%{transform:translate(0)}
+25%{transform:translate(2px,-2px)}
+50%{transform:translate(-2px,2px)}
+75%{transform:translate(2px,2px)}
+100%{transform:translate(0)}
 }
 </style>
 </head>
@@ -72,115 +87,127 @@ canvas{position:fixed;inset:0;z-index:1}
 <body>
 
 <canvas id="matrix"></canvas>
+<div id="hud">РОЗПАД: 100%</div>
 
 <!-- PROLOGUE -->
 <div id="prologue" class="screen active">
- <div class="panel">
-  <div class="line show">СИСТЕМА ТРІЩИТЬ.</div>
-  <div class="line show">НЕ ЗОВНІ — ВСЕРЕДИНІ.</div>
-  <div class="line show glitch">ДАНІ БІЛЬШЕ НЕ СХОДЯТЬСЯ.</div>
-  <div class="line show">ПОТРІБЕН ПРИНЦИП.</div>
- </div>
+  <div class="panel">
+    <div class="line">СИСТЕМА ТРІЩИТЬ.</div>
+    <div class="line">НЕ ЗОВНІ — ВСЕРЕДИНІ.</div>
+    <div class="line glitch">ДАНІ НЕ СХОДЯТЬСЯ.</div>
+    <div class="line">ПОТРІБЕН ПРИНЦИП.</div>
+  </div>
 </div>
 
 <!-- CHOICE -->
 <div id="choice" class="screen">
- <div class="panel">
-  <div class="line show">ОБЕРИ ШЛЯХ.</div>
-  <div class="choice" style="border-color:var(--gold);color:var(--gold)" onclick="startFoundation()">
-   ФУНДАМЕНТ // СТІЙКІСТЬ
+  <div class="panel">
+    <div class="line">ОБЕРИ ШЛЯХ.</div>
+    <div class="choice" style="border-color:var(--gold);color:var(--gold)" onclick="startFoundation()">
+      ФУНДАМЕНТ // СТІЙКІСТЬ
+    </div>
+    <div class="choice" style="border-color:var(--blue);color:var(--blue)">АРХІТЕКТОР // НЕДОСТУПНО</div>
+    <div class="choice" style="border-color:var(--violet);color:var(--violet)">РЕЗОНАНС // НЕДОСТУПНО</div>
   </div>
- </div>
 </div>
 
 <!-- FOUNDATION -->
 <div id="foundation" class="screen">
- <div class="panel">
-  <div class="line show" style="color:var(--gold)">ГЛАВА I — ФУНДАМЕНТ</div>
-  <div class="line show">ТИ НЕ ВИПРАВЛЯЄШ.</div>
-  <div class="line show">ТИ УТРИМУЄШ.</div>
- </div>
+  <div class="panel">
+    <div class="line" style="color:var(--gold)">ГЛАВА I — ФУНДАМЕНТ</div>
+    <div class="line">ТИ НЕ ВИПРАВЛЯЄШ.</div>
+    <div class="line">ТИ УТРИМУЄШ СТРУКТУРУ.</div>
+    <div class="line glitch" id="status"></div>
+  </div>
 </div>
-
-<div id="entropyBar">РОЗПАД: <span id="entropy">100</span>%</div>
 
 <script>
 /* MATRIX */
-const canvas=document.getElementById("matrix");
-const ctx=canvas.getContext("2d");
+const c=document.getElementById("matrix"),x=c.getContext("2d");
 let w,h,cols;
-function resize(){
- w=canvas.width=innerWidth;
- h=canvas.height=innerHeight;
- cols=Math.floor(w/16)
-}
-resize();onresize=resize;
-const chars="01";
+function rs(){w=c.width=innerWidth;h=c.height=innerHeight;cols=Math.floor(w/16)}
+rs();onresize=rs;
 let drops=Array(cols).fill(0);
-function matrix(){
- ctx.fillStyle="rgba(0,0,0,.4)";
- ctx.fillRect(0,0,w,h);
- ctx.fillStyle="#00ff9c";
- ctx.font="16px monospace";
- drops.forEach((y,i)=>{
-  ctx.fillText(chars[Math.random()>0.5?1:0],i*16,y*16);
-  if(y*16>h||Math.random()>.97)drops[i]=0;
-  drops[i]++
- });
- requestAnimationFrame(matrix)
+function draw(){
+x.fillStyle="rgba(0,0,0,.35)";
+x.fillRect(0,0,w,h);
+x.fillStyle="#00ff9c";
+x.font="16px monospace";
+drops.forEach((y,i)=>{
+x.fillText(Math.random()>.5?"1":"0",i*16,y*16);
+if(y*16>h||Math.random()>.96)drops[i]=0;
+drops[i]++;
+});
+requestAnimationFrame(draw);
 }
-matrix();
+draw();
 
 /* FLOW */
 setTimeout(()=>{
- document.getElementById("prologue").classList.remove("active");
- document.getElementById("choice").classList.add("active");
-},5000);
+prologue.classList.remove("active");
+choice.classList.add("active");
+},6000);
 
+/* GAME */
 let entropy=100;
 let fractures=[];
+const hud=document.getElementById("hud");
+const status=document.getElementById("status");
 
-function spawnFracture(real=true){
- const f=document.createElement("div");
- f.className="fracture"+(real?"":" fake");
- f.style.top=Math.random()*80+"%";
- f.style.left=Math.random()*80+"%";
-
- f.onclick=()=>{
-  if(real){
-   entropy-=8;
-   f.remove();
-   fractures=fractures.filter(x=>x!==f);
-  }else{
-   f.style.top=Math.random()*80+"%";
-   f.style.left=Math.random()*80+"%";
-  }
- };
-
- document.body.appendChild(f);
- fractures.push(f);
+function updateHUD(){
+entropy=Math.max(0,Math.min(100,entropy));
+hud.textContent="РОЗПАД: "+entropy+"%";
 }
 
-function maintainFractures(){
- const realCount=fractures.filter(f=>!f.classList.contains("fake")).length;
- if(realCount<2){
-  spawnFracture(true);
- }
- if(Math.random()<0.3){
-  spawnFracture(false);
- }
+function spawnFracture(){
+const f=document.createElement("div");
+f.className="fracture";
+if(Math.random()<0.35)f.classList.add("false");
+f.style.top=Math.random()*75+"%";
+f.style.left=Math.random()*75+"%";
+
+f.onclick=()=>{
+if(f.classList.contains("false")){
+f.style.top=Math.random()*75+"%";
+f.style.left=Math.random()*75+"%";
+entropy+=2;
+}else{
+entropy-=12;
+f.remove();
+fractures=fractures.filter(x=>x!==f);
+}
+updateHUD();
+};
+
+document.body.appendChild(f);
+fractures.push(f);
 }
 
 function startFoundation(){
- document.getElementById("choice").classList.remove("active");
- document.getElementById("foundation").classList.add("active");
+choice.classList.remove("active");
+foundation.classList.add("active");
 
- setInterval(()=>{
-  entropy+=0.2;
-  entropy=Math.min(100,entropy);
-  document.getElementById("entropy").textContent=Math.floor(entropy);
-  maintainFractures();
- },700);
+const loop=setInterval(()=>{
+entropy+=fractures.length*0.6;
+updateHUD();
+
+if(entropy>75){
+status.textContent="СТРУКТУРА РОЗПАДАЄТЬСЯ.";
+document.body.classList.add("chaos");
+}else{
+status.textContent="";
+document.body.classList.remove("chaos");
+}
+
+if(Math.random()<0.5 && fractures.length<8)spawnFracture();
+
+if(entropy<=0){
+status.textContent="ФУНДАМЕНТ УТРИМАНО.";
+document.body.classList.remove("chaos");
+clearInterval(loop);
+fractures.forEach(f=>f.remove());
+}
+},400);
 }
 </script>
 
