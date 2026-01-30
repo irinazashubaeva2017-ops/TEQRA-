@@ -3,462 +3,299 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TEQRA | Genesis</title>
+    <title>TEQRA | Zero Point</title>
     <style>
-        /* --- ФІЗИКА СВІТУ 3036 --- */
+        /* --- ФІЗИКА 3036 --- */
         :root {
-            --void: #020204;
-            --core-black: #000000;
-            --light-stable: 180, 255, 230;   /* Живе ціанове */
-            --light-dying: 255, 60, 60;      /* Криваво-червоне */
-            --light-hope: 255, 200, 100;     /* Тепле золоте (фундамент) */
+            --void: #050505;
+            --singularity: #000000;
+            --event-horizon: rgba(255, 255, 255, 0.9);
+            --danger-glow: 255, 50, 50;
+            --stable-glow: 100, 255, 200;
             
-            --anim-pulse-fast: 0.8s;
-            --anim-pulse-slow: 4s;
+            /* Динамічні змінні, якими керує JS */
+            --instability: 0;   /* 0.0 до 1.0 */
+            --drift-x: 0px;
+            --drift-y: 0px;
+            --rotate: 0deg;
+            --aberration: 0px;
         }
 
-        * {
-            margin: 0; padding: 0; box-sizing: border-box;
-            user-select: none; -webkit-tap-highlight-color: transparent;
-            cursor: none; /* У майбутньому курсорів немає */
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; cursor: none; }
 
         body {
             background-color: var(--void);
             height: 100vh; overflow: hidden;
             display: flex; justify-content: center; align-items: center;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            color: rgba(255,255,255,0.8);
-            perspective: 1000px;
-        }
-
-        /* --- ШАР 0: КОСМІЧНИЙ ПИЛ (CANVAS) --- */
-        #dust-layer {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 0; opacity: 0.4; mix-blend-mode: screen;
-        }
-
-        /* --- ШАР 1: ЖИВЕ СВІТЛО (NEBULA) --- */
-        .ambient-nebula {
-            position: fixed; top: 50%; left: 50%;
-            width: 150vmax; height: 150vmax;
-            background: radial-gradient(circle, rgba(var(--light-dying), 0.15), transparent 60%);
-            transform: translate(-50%, -50%);
-            z-index: 1;
-            animation: breathe-anxiety 5s infinite ease-in-out alternate;
-            transition: background 3s ease;
-        }
-
-        /* --- ШАР 2: ПОШКОДЖЕННЯ РЕАЛЬНОСТІ --- */
-        .reality-glitch {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 100; pointer-events: none;
-            box-shadow: inset 0 0 100px rgba(0,0,0,0.8);
-            mix-blend-mode: overlay;
-            opacity: 0;
-        }
-        
-        /* Ефект розлому (активується JS) */
-        body.broken .reality-glitch {
-            animation: glitch-flash 4s infinite random;
-            opacity: 0.3;
-        }
-
-        /* --- ШАР 3: ЯДРО (СИНГУЛЯРНІСТЬ) --- */
-        .singularity-wrapper {
-            position: relative;
-            z-index: 10;
-            display: flex; justify-content: center; align-items: center;
-            width: 300px; height: 300px;
-        }
-
-        /* Горизонт подій (Спотворення) */
-        .event-horizon {
-            position: absolute;
-            width: 100%; height: 100%;
-            border-radius: 50%;
-            /* Ефект лінзи */
-            backdrop-filter: blur(4px) contrast(1.5);
-            -webkit-backdrop-filter: blur(4px) contrast(1.5);
-            box-shadow: inset 0 0 80px rgba(0,0,0,0.9);
-            border: 1px solid rgba(255,255,255,0.05);
-            animation: distort-space 10s infinite linear;
-        }
-
-        /* Саме Ядро */
-        .the-core {
-            position: relative;
-            width: 140px; height: 140px;
-            background: var(--core-black);
-            border-radius: 50%;
-            /* Світіння з-під чорного */
-            box-shadow: 0 0 60px rgba(var(--light-dying), 0.6);
-            z-index: 20;
-            transition: all 1s cubic-bezier(0.25, 1, 0.5, 1);
-            animation: heartbeat-panic 1.2s infinite ease-in-out;
-        }
-
-        /* Акреційний диск (Тонке кільце) */
-        .the-core::after {
-            content: ''; position: absolute;
-            top: -5px; left: -5px; right: -5px; bottom: -5px;
-            border-radius: 50%;
-            border: 1px solid rgba(var(--light-dying), 0.8);
-            opacity: 0.7;
-            filter: blur(2px);
-            animation: spin-chaos 20s infinite linear;
-        }
-
-        /* --- ШАР 4: ХРАНИТЕЛІ (ОРБІТИ) --- */
-        .orbit-container {
-            position: absolute; width: 100%; height: 100%;
-            pointer-events: none; opacity: 0; transition: opacity 2s ease;
-        }
-
-        .guardian-node {
-            position: absolute;
-            width: 50px; height: 50px;
-            border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            pointer-events: auto;
-            transition: transform 0.6s ease;
-            mix-blend-mode: screen;
-        }
-
-        /* Візуал вузла */
-        .guardian-node::before {
-            content: ''; width: 8px; height: 8px; background: currentColor;
-            border-radius: 50%; box-shadow: 0 0 20px currentColor;
-            transition: all 0.4s;
-        }
-        
-        /* Позиції */
-        .node-foundation { top: 0; left: 50%; transform: translate(-50%, -50%); color: rgb(255, 160, 50); }
-        .node-architecture { bottom: 15%; left: 15%; transform: translate(-50%, 50%); color: rgb(0, 240, 255); }
-        .node-resonance { bottom: 15%; right: 15%; transform: translate(50%, 50%); color: rgb(255, 50, 220); }
-
-        /* Реакція на дотик */
-        .guardian-node.active::before { width: 100%; height: 100%; opacity: 0.2; }
-        .guardian-node.active { transform: scale(1.5) !important; }
-
-        /* --- ШАР 5: ДУМКИ (ТЕКСТ) --- */
-        .mind-stream {
-            position: fixed; bottom: 15%; width: 100%;
-            text-align: center;
-            font-size: 0.9rem; letter-spacing: 0.3em;
+            font-family: -apple-system, BlinkMacSystemFont, monospace;
             color: rgba(255,255,255,0.6);
-            opacity: 0;
-            transform: translateY(10px);
-            transition: all 1s ease;
-            mix-blend-mode: difference;
+            /* Важливо: приховуємо межі, бо світ буде "виїжджати" за кадр */
+        }
+
+        /* --- СВІТ (КОНТЕЙНЕР) --- */
+        /* Це шар, який "пливе". Він втрачає центр. */
+        #reality-layer {
+            position: relative;
+            width: 100vw; height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            will-change: transform, filter;
+            transform-style: preserve-3d;
+            /* Фізика дрейфу */
+            transform: translate3d(var(--drift-x), var(--drift-y), 0) rotate(var(--rotate));
+        }
+
+        /* --- ХРОМАТИЧНИЙ РОЗЛОМ (RGB SPLIT) --- */
+        /* Це копії світу, які розїжджаються при нестабільності */
+        .ghost-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
             pointer-events: none;
-            font-weight: 300;
+            mix-blend-mode: screen;
+            opacity: calc(var(--instability) * 0.8);
         }
-
-        /* --- АНІМАЦІЇ --- */
         
-        /* Дихання тривоги (червоне світло) */
-        @keyframes breathe-anxiety {
-            0% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
-            100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.1); }
+        .ghost-red {
+            transform: translate(calc(var(--aberration) * -1), calc(var(--aberration) * 0.5));
+            filter: drop-shadow(0 0 10px red);
+        }
+        .ghost-cyan {
+            transform: translate(calc(var(--aberration) * 1), calc(var(--aberration) * -0.5));
+            filter: drop-shadow(0 0 10px cyan);
         }
 
-        /* Дихання спокою (блакитне світло) */
-        @keyframes breathe-calm {
-            0% { opacity: 0.2; transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 0.3; transform: translate(-50%, -50%) scale(1.05); }
-            100% { opacity: 0.2; transform: translate(-50%, -50%) scale(1); }
+        /* --- СИНГУЛЯРНІСТЬ (ЯДРО) --- */
+        .singularity {
+            position: relative;
+            width: 120px; height: 120px;
+            background: var(--singularity);
+            border-radius: 50%;
+            z-index: 10;
+            /* Чим вища ентропія, тим більше "тремтить" саме ядро */
+            box-shadow: 0 0 calc(20px + var(--instability) * 100px) rgba(var(--danger-glow), calc(var(--instability) * 0.8));
+            transition: width 0.2s, height 0.2s; /* Швидка реакція на пульс */
         }
 
-        /* Биття серця (Ядро) */
-        @keyframes heartbeat-panic {
-            0% { transform: scale(1); box-shadow: 0 0 50px rgba(var(--light-dying), 0.5); }
-            15% { transform: scale(1.05); box-shadow: 0 0 90px rgba(var(--light-dying), 0.8); }
-            30% { transform: scale(1); box-shadow: 0 0 50px rgba(var(--light-dying), 0.5); }
-            100% { transform: scale(1); }
+        /* Горизонт подій (біле кільце) */
+        .singularity::after {
+            content: ''; position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.8);
+            /* Ефект "розмивання" реальності навколо діри */
+            box-shadow: 0 0 50px rgba(255,255,255,0.2);
         }
 
-        @keyframes heartbeat-calm {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 60px rgba(var(--light-stable), 0.3); }
-            50% { transform: scale(1.02); box-shadow: 0 0 80px rgba(var(--light-stable), 0.5); }
+        /* Внутрішня порожнеча */
+        .singularity-inner {
+            position: absolute; width: 100%; height: 100%;
+            border-radius: 50%; background: #000; z-index: 11;
         }
 
-        /* Спотворення простору */
-        @keyframes distort-space {
-            0% { border-radius: 50%; transform: rotate(0deg); }
-            33% { border-radius: 45% 55% 50% 50%; }
-            66% { border-radius: 50% 50% 45% 55%; }
-            100% { border-radius: 50%; transform: rotate(360deg); }
+        /* --- ІНТЕРФЕЙС СВІДОМОСТІ --- */
+        .system-thought {
+            position: fixed; bottom: 20%;
+            width: 100%; text-align: center;
+            font-size: 0.8rem; letter-spacing: 0.3em; text-transform: uppercase;
+            opacity: 0; transition: opacity 1s;
+            mix-blend-mode: difference;
+            pointer-events: none; z-index: 20;
         }
 
-        /* Глітч реальності */
-        @keyframes glitch-flash {
-            0%, 95% { opacity: 0; transform: translateX(0); }
-            96% { opacity: 0.2; transform: translateX(-5px); filter: hue-rotate(90deg); }
-            97% { opacity: 0; transform: translateX(0); }
-            98% { opacity: 0.3; transform: translateX(5px); filter: hue-rotate(-90deg); }
-            100% { opacity: 0; }
+        /* Віньєтка (темніє по краях при розпаді) */
+        .vignette {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 40%, #000 120%);
+            opacity: calc(0.3 + var(--instability));
+            pointer-events: none; z-index: 5;
         }
 
-        /* Ефект дотику (Ripple) */
-        .ripple {
-            position: absolute; border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 50%; animation: ripple-expand 1.5s ease-out forwards;
-            pointer-events: none; z-index: 50;
+        /* --- ШУМ ПРОСТОРУ --- */
+        .grain {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
+            opacity: calc(0.05 + var(--instability) * 0.15);
+            pointer-events: none; z-index: 6;
+            filter: contrast(150%);
         }
-        @keyframes ripple-expand { to { transform: scale(5); opacity: 0; border-width: 0; } }
 
     </style>
 </head>
-<body class="broken">
+<body>
 
-    <div class="reality-glitch"></div>
-    <div class="ambient-nebula" id="ambient"></div>
-    <canvas id="dust-layer"></canvas>
+    <div class="vignette"></div>
+    <div class="grain"></div>
 
-    <div class="singularity-wrapper" id="world-center">
-        <div class="event-horizon"></div>
-        <div class="the-core" id="core"></div>
-
-        <div class="orbit-container" id="orbits">
-            <div class="guardian-node node-foundation" data-role="foundation"></div>
-            <div class="guardian-node node-architecture" data-role="architecture"></div>
-            <div class="guardian-node node-resonance" data-role="resonance"></div>
+    <div id="reality-layer">
+        
+        <div class="ghost-layer ghost-red">
+            <div class="singularity" style="background:transparent; box-shadow:none; border: 1px solid red;"></div>
         </div>
+        <div class="ghost-layer ghost-cyan">
+            <div class="singularity" style="background:transparent; box-shadow:none; border: 1px solid cyan;"></div>
+        </div>
+
+        <div class="singularity" id="core">
+            <div class="singularity-inner"></div>
+        </div>
+
     </div>
 
-    <div class="mind-stream" id="thought-display"></div>
+    <div class="system-thought" id="thoughts"></div>
 
     <script>
-        // --- 1. СИСТЕМА ДУМОК (НАРАТИВ) ---
-        const thoughtDisplay = document.getElementById('thought-display');
-        
-        function think(text, duration = 3000) {
-            // Плавна зміна думок
-            thoughtDisplay.style.opacity = '0';
-            setTimeout(() => {
-                thoughtDisplay.innerText = text;
-                thoughtDisplay.style.opacity = '1';
-                
-                if (duration > 0) {
-                    setTimeout(() => { thoughtDisplay.style.opacity = '0'; }, duration);
-                }
-            }, 1000);
-        }
+        /* АРХІТЕКТУРА 3036: ФІЗИКА РОЗПАДУ
+           Ми не використовуємо CSS анімації. Ми використовуємо JS physics loop.
+           Світ має "дрейф". Якщо не тримати, дрейф прискорюється.
+        */
 
-        // --- 2. ЖИТТЄВИЙ ЦИКЛ ---
+        const root = document.documentElement;
         const core = document.getElementById('core');
-        const ambient = document.getElementById('ambient');
-        const orbits = document.getElementById('orbits');
-        const worldCenter = document.getElementById('world-center');
+        const thoughts = document.getElementById('thoughts');
         
-        let state = 'chaos'; // chaos -> resonance -> stabilizing -> stabilized
+        // --- ЗМІННІ СТАНУ ---
+        let entropy = 0;       // 0 = стабільність, 100 = катастрофа
+        let isHolding = false; // Чи тримає користувач світ
+        let driftVector = { x: 0, y: 0, r: 0 }; // Куди пливе світ
+        let currentPos = { x: 0, y: 0, r: 0 };  // Де світ зараз
+        let time = 0;
+        let stabilized = false; // Чи досягнуто фіналу
 
-        // ЕТАП 1: УСВІДОМЛЕННЯ КАТАСТРОФИ
-        setTimeout(() => think("рівновага втрачена", 3000), 1000);
-        setTimeout(() => think("матерія кричить", 3000), 5000);
-        
+        // --- НАРАТИВ ---
+        function think(text, time = 3000) {
+            thoughts.innerText = text;
+            thoughts.style.opacity = '1';
+            setTimeout(() => { if(!stabilized) thoughts.style.opacity = '0'; }, time);
+        }
+
+        // Старт прологу
+        setTimeout(() => think("гравітація втрачена"), 1000);
+        setTimeout(() => think("світ більше не тримається"), 4000);
         setTimeout(() => {
-            think("потрібна точка опори", 0); // Тримаємо фразу
-            orbits.style.opacity = '1';
-            state = 'resonance';
-        }, 9000);
+            if(!isHolding) think("все розсипається");
+            // Запускаємо ріст ентропії
+            setInterval(entropyLoop, 16); 
+        }, 7000);
 
-        // --- 3. ВЗАЄМОДІЯ (РЕЗОНАНС) ---
-        const nodes = document.querySelectorAll('.guardian-node');
-        let holdTimer = null;
-        
-        nodes.forEach(node => {
-            // Початок дотику
-            node.addEventListener('touchstart', (e) => startResonance(e, node), {passive: false});
-            node.addEventListener('mousedown', (e) => startResonance(e, node));
-            
-            // Кінець дотику
-            node.addEventListener('touchend', endResonance);
-            node.addEventListener('mouseup', endResonance);
-            node.addEventListener('mouseleave', endResonance);
-        });
+        // --- ВЗАЄМОДІЯ ---
+        // Ми слухаємо весь екран, бо "ловити" кнопку в хаосі важко
+        document.addEventListener('touchstart', holdStart, {passive: false});
+        document.addEventListener('mousedown', holdStart);
+        document.addEventListener('touchend', holdEnd);
+        document.addEventListener('mouseup', holdEnd);
 
-        function startResonance(e, node) {
-            if (state !== 'resonance') return;
+        function holdStart(e) {
             e.preventDefault();
-            
-            node.classList.add('active');
-            
-            // Візуальний фокус
-            worldCenter.style.transform = 'scale(0.9)'; // Світ стискається
-            core.style.transform = 'scale(0.8)'; 
-            
-            // Звук думок (опис ролі)
-            const role = node.dataset.role;
-            let thought = "";
-            if (role === 'foundation') thought = "фундамент • важкість • спокій";
-            if (role === 'architecture') thought = "архітектура • логіка • схема";
-            if (role === 'resonance') thought = "резонанс • життя • потік";
-            
-            thoughtDisplay.innerText = thought;
-            thoughtDisplay.style.opacity = '1';
-
-            // Утримання для вибору
-            holdTimer = setTimeout(() => {
-                commitRole(role, node);
-            }, 1500);
+            if(stabilized) return;
+            isHolding = true;
+            core.style.transform = "scale(0.9)"; // Візуальний відгук "стиснення"
+            think("УТРИМУЙ", 0); // Постійний напис
         }
 
-        function endResonance() {
-            if (state !== 'resonance') return;
-            clearTimeout(holdTimer);
-            
-            nodes.forEach(n => n.classList.remove('active'));
-            worldCenter.style.transform = 'scale(1)';
-            core.style.transform = 'scale(1)';
-            thoughtDisplay.style.opacity = '0';
+        function holdEnd() {
+            if(stabilized) return;
+            isHolding = false;
+            core.style.transform = "scale(1)";
+            think("ВТРАТА КОНТРОЛЮ");
         }
 
-        function commitRole(role, node) {
-            state = 'stabilizing';
-            const color = getComputedStyle(node).color;
-            
-            // Ефект прийняття
-            orbits.style.opacity = '0';
-            orbits.style.pointerEvents = 'none';
-            
-            // Ядро забарвлюється в колір вибору, потім в червоний (тривога)
-            core.style.boxShadow = `0 0 100px ${color}`;
-            core.style.background = color;
-            
-            think(`ПРИЙНЯТО: ${role.toUpperCase()}`);
+        // --- ГОЛОВНИЙ ЦИКЛ ФІЗИКИ (HEARTBEAT) ---
+        function entropyLoop() {
+            time += 0.05;
 
-            setTimeout(() => {
-                // Перехід до драми
-                startStabilization(color);
-            }, 2500);
-        }
+            // 1. ЛОГІКА ЕНТРОПІЇ
+            if (isHolding) {
+                // Якщо тримаємо - ентропія падає, але з опором (важко)
+                entropy -= 0.8;
+            } else {
+                // Якщо відпустили - ентропія росте, світ "розганяється"
+                entropy += 0.4;
+            }
 
-        // --- 4. СТАБІЛІЗАЦІЯ (ДРАМА ЯДРА) ---
-        function startStabilization(roleColor) {
-            think("УТРИМУЙ РОЗПАД");
+            // Обмежувачі (Clamp)
+            if (entropy < 0) entropy = 0;
+            if (entropy > 100) entropy = 100;
+
+            // 2. ФІЗИКА ДРЕЙФУ (Perlin Noise Simulation)
+            // Чим більша ентропія, тим ширша амплітуда дрейфу
+            const chaosLevel = entropy / 100; 
+
+            // Цільова позиція (куди світ "хоче" втекти)
+            // Використовуємо sin/cos з різними частотами, щоб рух був хаотичним
+            const targetX = Math.sin(time) * 50 * chaosLevel + Math.cos(time * 2.3) * 50 * chaosLevel;
+            const targetY = Math.cos(time * 1.5) * 50 * chaosLevel + Math.sin(time * 1.2) * 50 * chaosLevel;
+            const targetR = Math.sin(time * 0.5) * 15 * chaosLevel; // Обертання
+
+            // 3. ІНЕРЦІЯ (LERP)
+            // Якщо тримаємо - світ "тягнеться" до центру (0,0)
+            // Якщо ні - світ летить до targetX/Y
+            let ease = isHolding ? 0.05 : 0.02; // Коли тримаємо, контроль жорсткіший
             
-            // Повертаємо тривогу, але сильнішу
-            core.style.background = "#000";
-            core.style.boxShadow = "0 0 40px rgba(255, 60, 60, 0.9)";
-            core.style.animation = "heartbeat-panic 0.6s infinite ease-in-out"; // Швидке серцебиття
+            let destX = isHolding ? 0 : targetX;
+            let destY = isHolding ? 0 : targetY;
+            let destR = isHolding ? 0 : targetR;
+
+            // Інтерполяція поточної позиції до цільової
+            currentPos.x += (destX - currentPos.x) * ease;
+            currentPos.y += (destY - currentPos.y) * ease;
+            currentPos.r += (destR - currentPos.r) * ease;
+
+            // Додаємо мікро-тремтіння (Vibration), якщо ентропія висока
+            const shake = isHolding ? (entropy/5) : 0; // Коли тримаємо високу ентропію - трусить сильно
+            const jitterX = (Math.random() - 0.5) * shake;
+            const jitterY = (Math.random() - 0.5) * shake;
+
+            // 4. РЕНДЕР (CSS ЗМІННІ)
+            root.style.setProperty('--instability', chaosLevel);
+            root.style.setProperty('--drift-x', `${currentPos.x + jitterX}px`);
+            root.style.setProperty('--drift-y', `${currentPos.y + jitterY}px`);
+            root.style.setProperty('--rotate', `${currentPos.r}deg`);
             
-            // Слухаємо дотик до центру
-            worldCenter.addEventListener('touchstart', onHoldStart, {passive: false});
-            worldCenter.addEventListener('mousedown', onHoldStart);
-            worldCenter.addEventListener('touchend', onHoldEnd);
-            worldCenter.addEventListener('mouseup', onHoldEnd);
-        }
+            // Хроматична аберація (розшарування кольорів) залежить від дрейфу
+            const aberr = (Math.abs(currentPos.x) + Math.abs(currentPos.y)) * 0.5;
+            root.style.setProperty('--aberration', `${aberr}px`);
 
-        let progress = 0;
-        let stabilizeInterval;
-
-        function onHoldStart(e) {
-            if (state !== 'stabilizing') return;
-            e.preventDefault();
-            createRipple(e);
-
-            // Ефект зусилля
-            worldCenter.style.transform = "scale(0.95)";
-            
-            stabilizeInterval = setInterval(() => {
-                progress += 1.5;
-                
-                // Візуальний прогрес: Ядро світлішає і заспокоюється
-                const intensity = progress / 100;
-                core.style.opacity = 0.5 + (intensity * 0.5);
-                ambient.style.opacity = 0.5 + (intensity * 0.5);
-                
-                // Тремтіння
-                const shake = (1 - intensity) * 5;
-                worldCenter.style.transform = `translate(${Math.random()*shake}px, ${Math.random()*shake}px) scale(0.95)`;
-
-                if (progress >= 100) {
-                    finalize();
+            // 5. ВІЗУАЛІЗАЦІЯ СТАНУ ЯДРА
+            if (isHolding) {
+                // Коли тримаємо - ядро стає стабільним кольором, але все ще бореться
+                // Чим ближче до 0 ентропії, тим зеленіше/блакитніше
+                if (entropy < 10) {
+                    core.style.boxShadow = `0 0 50px rgba(var(--stable-glow), 0.5)`;
+                    core.style.background = "#000";
+                } else {
+                    core.style.boxShadow = `0 0 ${entropy}px rgba(var(--danger-glow), 0.6)`;
                 }
-            }, 30);
+            } else {
+                // Відпустили - червона тривога
+                 core.style.boxShadow = `0 0 ${entropy * 1.5}px rgba(var(--danger-glow), ${chaosLevel})`;
+            }
+
+            // 6. УМОВА ПЕРЕМОГИ (СТАБІЛІЗАЦІЯ)
+            // Потрібно утримати ентропію на 0 певний час
+            if (isHolding && entropy <= 1 && !stabilized) {
+                completePrologue();
+            }
         }
 
-        function onHoldEnd() {
-            if (state !== 'stabilizing') return;
-            clearInterval(stabilizeInterval);
-            worldCenter.style.transform = "scale(1)";
-            // Якщо відпустити — відкат назад
-            progress = Math.max(0, progress - 10); 
-        }
-
-        // --- 5. ФІНАЛ (ТИША) ---
-        function finalize() {
-            clearInterval(stabilizeInterval);
-            state = 'stabilized';
+        function completePrologue() {
+            stabilized = true;
+            isHolding = false; // Блокуємо інпут
             
-            // 1. Прибираємо глюки
-            document.body.classList.remove('broken');
+            // Фінальний стан
+            root.style.setProperty('--instability', 0);
+            root.style.setProperty('--drift-x', '0px');
+            root.style.setProperty('--drift-y', '0px');
+            root.style.setProperty('--rotate', '0deg');
+            root.style.setProperty('--aberration', '0px');
+
+            // Ядро спалахує і застигає
+            core.style.transition = "all 2s ease";
+            core.style.boxShadow = "0 0 100px rgba(100, 255, 200, 0.8)";
+            core.style.background = "#000502";
             
-            // 2. Змінюємо світло на стабільне
-            ambient.style.background = "radial-gradient(circle, rgba(180, 255, 230, 0.2), transparent 70%)";
-            ambient.style.animation = "breathe-calm 8s infinite ease-in-out";
-            
-            // 3. Ядро стає стабільним
-            core.style.animation = "heartbeat-calm 6s infinite ease-in-out";
-            core.style.boxShadow = "0 0 80px rgba(180, 255, 230, 0.5)";
-            core.style.background = "#020805"; // Глибокий зелений
-            worldCenter.style.transform = "scale(1)";
-
-            // 4. Фінальна думка
-            think("", 100); // Очистка
-            setTimeout(() => {
-                think("ти втрутився", 4000);
-            }, 1000);
-            
-            setTimeout(() => {
-                think("тепер відповідальність на тобі", 0); // Лишається назавжди
-            }, 6000);
+            think("", 100);
+            setTimeout(() => think("ДРЕЙФ ЗУПИНЕНО", 5000), 500);
+            setTimeout(() => think("ТИ ТРИМАЄШ ВАГУ СВІТУ", 0), 4000);
         }
-
-        // --- УТИЛІТИ ---
-        function createRipple(e) {
-            const x = e.touches ? e.touches[0].clientX : e.clientX;
-            const y = e.touches ? e.touches[0].clientY : e.clientY;
-            const rip = document.createElement('div');
-            rip.className = 'ripple';
-            rip.style.left = x + 'px';
-            rip.style.top = y + 'px';
-            rip.style.width = '10px'; rip.style.height = '10px';
-            document.body.appendChild(rip);
-            setTimeout(() => rip.remove(), 1500);
-        }
-
-        // --- ЕФІРНИЙ ФОН (Оптимізований) ---
-        const canvas = document.getElementById('dust-layer');
-        const ctx = canvas.getContext('2d');
-        let w, h;
-        
-        function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
-        window.addEventListener('resize', resize);
-        resize();
-
-        const particles = Array.from({length: 60}, () => ({
-            x: Math.random() * w, y: Math.random() * h,
-            s: Math.random() * 1.5,
-            vx: (Math.random() - 0.5) * 0.2, vy: (Math.random() - 0.5) * 0.2,
-            a: Math.random() * 0.5
-        }));
-
-        function animParticles() {
-            ctx.clearRect(0, 0, w, h);
-            ctx.fillStyle = "#fff";
-            particles.forEach(p => {
-                p.x += p.vx; p.y += p.vy;
-                if(p.x < 0) p.x = w; if(p.x > w) p.x = 0;
-                if(p.y < 0) p.y = h; if(p.y > h) p.y = 0;
-                ctx.globalAlpha = p.a;
-                ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, Math.PI*2); ctx.fill();
-            });
-            requestAnimationFrame(animParticles);
-        }
-        animParticles();
 
     </script>
 </body>
