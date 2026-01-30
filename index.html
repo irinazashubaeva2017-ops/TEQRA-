@@ -6,37 +6,39 @@
 <title>TEQRA</title>
 
 <style>
-/* ===== GLOBAL ===== */
 *{
-  margin:0;padding:0;box-sizing:border-box;
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
   user-select:none;
   -webkit-user-select:none;
 }
 html,body{
-  width:100%;height:100%;
+  width:100%;
+  height:100%;
   overflow:hidden;
   background:#000;
-  color:#eaeaea;
   font-family:"Courier New", monospace;
+  color:#eaeaea;
 }
 
-/* ===== COLORS ===== */
+/* COLORS */
 :root{
   --green:#00ff9c;
   --gold:#ffb86b;
+  --red:#ff4d4d;
   --blue:#66d9ff;
   --violet:#c792ea;
-  --red:#ff4d4d;
 }
 
-/* ===== MATRIX ===== */
+/* MATRIX */
 canvas{
   position:fixed;
   inset:0;
   z-index:1;
 }
 
-/* ===== SCREENS ===== */
+/* UI */
 .screen{
   position:fixed;
   inset:0;
@@ -46,83 +48,89 @@ canvas{
   align-items:center;
   opacity:0;
   pointer-events:none;
-  transition:opacity 1.2s;
+  transition:opacity 1s;
 }
 .screen.active{
   opacity:1;
   pointer-events:auto;
 }
 
-/* ===== TEXT ===== */
 .panel{
   max-width:760px;
   padding:24px;
   text-align:center;
 }
+
 .line{
   margin:14px 0;
   font-size:18px;
-  opacity:0;
-  transform:translateY(10px);
-  transition:.8s;
 }
-.line.show{
-  opacity:1;
-  transform:none;
-}
+
 .glitch{
   animation:glitch 1.4s infinite;
 }
 @keyframes glitch{
   0%{text-shadow:none}
-  30%{text-shadow:-2px 0 red,2px 0 cyan}
-  60%{text-shadow:2px 0 red,-2px 0 cyan}
+  40%{text-shadow:-2px 0 red,2px 0 cyan}
+  80%{text-shadow:2px 0 red,-2px 0 cyan}
   100%{text-shadow:none}
 }
 
-/* ===== CHOICE ===== */
+/* CHOICE */
 .choice{
   border:2px solid;
   padding:18px;
   margin:16px 0;
   cursor:pointer;
-  transition:.3s;
 }
 .choice:hover{
   background:rgba(255,255,255,.05);
 }
 
-/* ===== FOUNDATION ===== */
-#entropy{color:var(--red)}
+/* TOP HUD */
+#hud{
+  position:fixed;
+  top:12px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:10;
+  font-size:16px;
+  letter-spacing:2px;
+}
+#entropy{
+  color:var(--red);
+}
 
-/* ===== FRACTURES ===== */
+/* FRACTURES */
 .fracture{
   position:fixed;
   width:90px;
   height:90px;
   background:#000;
   border:2px solid var(--red);
-  box-shadow:0 0 25px var(--red);
-  animation:pulse 1.1s infinite;
-  z-index:5;
+  box-shadow:0 0 20px var(--red);
+  z-index:6;
+  animation:pulse 1s infinite;
 }
 .fracture.fake{
   border-style:dashed;
-  box-shadow:0 0 10px rgba(255,255,255,.2);
+  opacity:.6;
 }
 @keyframes pulse{
-  0%{transform:scale(.9);opacity:.6}
-  50%{transform:scale(1.1);opacity:1}
-  100%{transform:scale(.9);opacity:.6}
+  0%{transform:scale(.9)}
+  50%{transform:scale(1.05)}
+  100%{transform:scale(.9)}
 }
 
-/* ===== CHAOS ===== */
+/* SHAKE */
 body.chaos{
   animation:shake .15s infinite;
 }
 @keyframes shake{
   0%{transform:translate(0,0)}
-  50%{transform:translate(2px,-2px)}
+  25%{transform:translate(2px,-2px)}
+  50%{transform:translate(-2px,2px)}
+  75%{transform:translate(2px,2px)}
   100%{transform:translate(0,0)}
 }
 </style>
@@ -132,21 +140,24 @@ body.chaos{
 
 <canvas id="matrix"></canvas>
 
+<div id="hud" style="display:none">
+  РІВЕНЬ РОЗПАДУ: <span id="entropy">82</span>%
+</div>
+
 <!-- PROLOGUE -->
 <div id="prologue" class="screen active">
   <div class="panel">
-    <div class="line show">СИСТЕМА ДАЄ ЗБІЙ.</div>
-    <div class="line show">НЕ ЗОВНІ.</div>
-    <div class="line show">ВСЕРЕДИНІ.</div>
-    <div class="line show glitch">ДАНІ СУПЕРЕЧЛИВІ.</div>
-    <div class="line show">ПОТРІБЕН ВИБІР.</div>
+    <div class="line">СИСТЕМА ТРІЩИТЬ.</div>
+    <div class="line">НЕ ЗОВНІ — ВСЕРЕДИНІ.</div>
+    <div class="line glitch">ДАНІ РОЗПАДАЮТЬСЯ.</div>
+    <div class="line">ПОТРІБЕН ПРИНЦИП.</div>
   </div>
 </div>
 
 <!-- CHOICE -->
 <div id="choice" class="screen">
   <div class="panel">
-    <div class="line show">ОБЕРИ ШЛЯХ.</div>
+    <div class="line">ОБЕРИ ШЛЯХ.</div>
 
     <div class="choice" style="border-color:var(--gold);color:var(--gold)"
       onclick="selectPath('foundation')">
@@ -166,20 +177,15 @@ body.chaos{
 <!-- FOUNDATION -->
 <div id="foundation" class="screen">
   <div class="panel">
-    <div class="line show" style="color:var(--gold)">ГЛАВА I — ФУНДАМЕНТ</div>
-    <div class="line show">ТИ НЕ ВИПРАВЛЯЄШ.</div>
-    <div class="line show">ТИ ВІДРІЗНЯЄШ.</div>
-
-    <div class="line glitch">
-      РІВЕНЬ РОЗПАДУ: <span id="entropy">72</span>%
-    </div>
-
-    <div class="line glitch" id="sys"></div>
+    <div class="line" style="color:var(--gold)">ГЛАВА I — ФУНДАМЕНТ</div>
+    <div class="line">СИСТЕМА ВТРАЧАЄ ФОРМУ.</div>
+    <div class="line">ТИ УТРИМУЄШ СТРУКТУРУ.</div>
+    <div class="line glitch" id="status"></div>
   </div>
 </div>
 
 <script>
-/* ===== MATRIX ===== */
+/* MATRIX */
 const canvas=document.getElementById("matrix");
 const ctx=canvas.getContext("2d");
 let w,h,cols;
@@ -189,61 +195,62 @@ function resize(){
   cols=Math.floor(w/16);
 }
 resize();onresize=resize;
+
 const chars="01";
 let drops=Array(cols).fill(0);
+
 function matrix(){
-  ctx.fillStyle="rgba(0,0,0,.35)";
+  ctx.fillStyle="rgba(0,0,0,.4)";
   ctx.fillRect(0,0,w,h);
   ctx.fillStyle="#00ff9c";
   ctx.font="16px monospace";
   drops.forEach((y,i)=>{
     ctx.fillText(chars[Math.random()>0.5?1:0],i*16,y*16);
-    if(y*16>h||Math.random()>.96)drops[i]=0;
+    if(y*16>h||Math.random()>.97)drops[i]=0;
     drops[i]++;
   });
   requestAnimationFrame(matrix);
 }
 matrix();
 
-/* ===== FLOW ===== */
+/* FLOW */
 setTimeout(()=>{
-  document.getElementById("prologue").classList.remove("active");
-  document.getElementById("choice").classList.add("active");
-},6000);
+  prologue.classList.remove("active");
+  choice.classList.add("active");
+},5000);
 
-/* ===== FOUNDATION GAME ===== */
-let entropy=72;
-let stabilized=false;
+let entropy=82;
 let fractures=[];
+let stabilized=false;
 const ent=document.getElementById("entropy");
-const sys=document.getElementById("sys");
+const hud=document.getElementById("hud");
+const status=document.getElementById("status");
 
 function selectPath(p){
-  document.getElementById("choice").classList.remove("active");
+  choice.classList.remove("active");
   if(p==="foundation"){
-    document.getElementById("foundation").classList.add("active");
+    foundation.classList.add("active");
+    hud.style.display="block";
     startFoundation();
   }
 }
 
-function randomPos(el){
-  el.style.top=Math.random()*80+"%";
-  el.style.left=Math.random()*80+"%";
-}
-
 function spawnFracture(){
   const f=document.createElement("div");
-  const fake=Math.random()<0.35; // 35% фальш
+  f.className="fracture";
+  const fake=Math.random()<0.35;
+  if(fake)f.classList.add("fake");
 
-  f.className="fracture"+(fake?" fake":"");
-  randomPos(f);
+  f.style.top=Math.random()*75+"%";
+  f.style.left=Math.random()*75+"%";
 
   f.onclick=()=>{
     if(fake){
-      entropy+=4;
-      randomPos(f);
+      f.style.top=Math.random()*75+"%";
+      f.style.left=Math.random()*75+"%";
+      entropy+=2;
     }else{
-      entropy-=7;
+      entropy-=8;
       f.remove();
       fractures=fractures.filter(x=>x!==f);
     }
@@ -257,30 +264,26 @@ function startFoundation(){
   setInterval(()=>{
     if(stabilized)return;
 
-    entropy+=0.3;
-    entropy+=fractures.length*0.2;
-
-    if(Math.random()<entropy/140){
-      spawnFracture();
-    }
-
+    entropy+=fractures.length*0.15;
     entropy=Math.max(0,Math.min(100,entropy));
     ent.textContent=Math.floor(entropy);
 
-    if(entropy>85){
-      sys.textContent="СИСТЕМА БРЕШЕ.";
+    if(entropy>75){
+      status.textContent="СТРУКТУРА РОЗЛАМУЄТЬСЯ.";
       document.body.classList.add("chaos");
-    }else if(entropy>65){
-      sys.textContent="НЕ ВСІ РОЗЛОМИ СПРАВЖНІ.";
+      if(Math.random()<0.08)spawnFracture();
+    }else if(entropy>45){
+      status.textContent="НАПРУЖЕННЯ ЗРОСТАЄ.";
       document.body.classList.remove("chaos");
+      if(Math.random()<0.05)spawnFracture();
     }else{
-      sys.textContent="";
+      status.textContent="ФОРМА ТРИМАЄТЬСЯ.";
       document.body.classList.remove("chaos");
     }
 
-    if(entropy<=1){
+    if(entropy<=5){
       stabilized=true;
-      sys.textContent="ФУНДАМЕНТ УТРИМАНО.";
+      status.textContent="ФУНДАМЕНТ ЗАКРІПЛЕНО.";
       fractures.forEach(f=>f.remove());
     }
   },90);
