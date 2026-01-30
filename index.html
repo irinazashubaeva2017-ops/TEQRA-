@@ -2,218 +2,238 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TEQRA</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>TEQRA // FOUNDATION</title>
 
 <style>
-html, body {
-    margin: 0;
-    padding: 0;
-    background: #050505;
-    color: #e6e6e6;
-    font-family: monospace;
-    overflow: hidden;
-    user-select: none;
+/* ===== BLOCK SELECTION ===== */
+*{
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
+}
+html,body{overscroll-behavior:none}
+
+/* ===== COLORS ===== */
+:root{
+  --bg:#000;
+  --green:#00ff9c;
+  --gold:#ffb86b;
+  --red:#ff4d4d;
+  --white:#eaeaea;
+}
+
+/* ===== BASE ===== */
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--white);
+  font-family:"Courier New", monospace;
+  overflow:hidden;
 }
 
 /* ===== MATRIX ===== */
-#matrix {
-    position: fixed;
-    inset: 0;
-    font-size: 18px;
-    line-height: 20px;
-    color: #00ff88;
-    opacity: 0.12;
-    white-space: pre;
-    pointer-events: none;
+canvas{
+  position:fixed;
+  inset:0;
+  z-index:1;
 }
 
-/* ===== SCREENS ===== */
-.screen {
-    position: fixed;
-    inset: 0;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    text-align: center;
-    z-index: 10;
+/* ===== FRACTURE ===== */
+#fracture{
+  position:fixed;
+  inset:0;
+  z-index:2;
+  pointer-events:none;
+}
+.frag{
+  position:absolute;
+  border:1px solid rgba(255,255,255,.12);
+  animation:drift 8s infinite alternate ease-in-out;
+}
+@keyframes drift{
+  from{transform:translate(0,0)}
+  to{transform:translate(var(--dx),var(--dy))}
 }
 
-.screen.active {
-    display: flex;
+/* ===== UI ===== */
+#ui{
+  position:fixed;
+  inset:0;
+  z-index:3;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+.screen{
+  max-width:720px;
+  padding:24px;
+  text-align:center;
 }
 
-h1 {
-    letter-spacing: 4px;
-    margin-bottom: 20px;
+/* ===== TEXT ===== */
+.line{
+  font-size:18px;
+  line-height:1.7;
+  margin:14px 0;
+  opacity:0;
+  transform:translateY(10px);
+  transition:all .8s ease;
+}
+.line.show{opacity:1;transform:none}
+
+.glitch{
+  animation:glitch 1.8s infinite;
+}
+@keyframes glitch{
+  0%{text-shadow:none}
+  25%{text-shadow:-2px 0 red,2px 0 cyan}
+  50%{text-shadow:2px 0 red,-2px 0 cyan}
+  100%{text-shadow:none}
 }
 
-p {
-    max-width: 340px;
-    line-height: 1.6;
-    opacity: 0.9;
+/* ===== HOLD ===== */
+#hold{
+  margin-top:40px;
+  padding:22px;
+  border:2px solid var(--gold);
+  color:var(--gold);
+  letter-spacing:5px;
+  font-size:22px;
+  cursor:pointer;
+}
+#hold.active{
+  background:rgba(255,184,107,.15);
 }
 
-/* ===== BUTTON ===== */
-.btn {
-    margin-top: 40px;
-    padding: 14px 26px;
-    border: 1px solid #888;
-    cursor: pointer;
-    pointer-events: auto;
-}
-
-.btn:hover {
-    background: rgba(255,255,255,0.05);
-}
-
-/* ===== PATH SELECTION ===== */
-.path {
-    width: 280px;
-    padding: 18px;
-    border: 1px solid #444;
-    margin: 10px 0;
-    cursor: pointer;
-    pointer-events: auto;
-    transition: 0.2s;
-}
-
-.path.active {
-    border-color: #00ffcc;
-    box-shadow: 0 0 20px rgba(0,255,200,0.3);
-}
-
-.path.dim {
-    opacity: 0.3;
-}
-
-/* ===== HOLD BUTTON ===== */
-#hold {
-    margin-top: 30px;
-    width: 180px;
-    height: 180px;
-    border-radius: 50%;
-    border: 2px solid #00ffcc;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #00ffcc;
-    letter-spacing: 3px;
-    pointer-events: auto;
-}
-
-#hold.active {
-    transform: scale(0.96);
-    box-shadow: 0 0 30px #00ffcc;
-}
-
-/* ===== CRACKS ===== */
-.crack {
-    position: fixed;
-    width: 60px;
-    height: 60px;
-    background: #000;
-    z-index: 20;
-    cursor: pointer;
-    box-shadow: 0 0 20px rgba(0,0,0,0.9);
-}
+/* ===== HIDDEN ===== */
+.hidden{display:none}
 </style>
 </head>
 
 <body>
 
-<div id="matrix"></div>
+<canvas id="matrix"></canvas>
+<div id="fracture"></div>
 
-<!-- ПРОЛОГ -->
-<div class="screen active" id="prologue">
-    <h1>TEQRA</h1>
-    <p>
-        Система втратила центр.<br>
-        Дані більше не сходяться.<br><br>
-        Потрібна не дія.<br>
-        Потрібна присутність.
-    </p>
-    <div class="btn" onclick="goSelect()">ДАЛІ</div>
-</div>
+<div id="ui">
+  <div class="screen">
 
-<!-- ВИБІР -->
-<div class="screen" id="select">
-    <h1>ОБЕРИ ПРИНЦИП</h1>
+    <div id="foundation">
+      <div class="line show" style="color:var(--gold)">ГЛАВА I — ФУНДАМЕНТ</div>
+      <div class="line show">ТИ НЕ ВИПРАВЛЯЄШ СИСТЕМУ.</div>
+      <div class="line show">ТИ УТРИМУЄШ ЇЇ ВАГУ.</div>
 
-    <div class="path" data-path="foundation">
-        ФУНДАМЕНТ //<br> СТІЙКІСТЬ
+      <div class="line show glitch">
+        РОЗПАД: <span id="entropy">78</span>%
+      </div>
+
+      <div id="systemMsg" class="line glitch hidden">
+        СИСТЕМА ЧИНИТЬ ОПІР.
+      </div>
+
+      <div id="hold">УТРИМУЙ</div>
     </div>
 
-    <div class="path" data-path="architect">
-        АРХІТЕКТОР //<br> ЛОГІКА
-    </div>
-
-    <div class="path" data-path="resonance">
-        РЕЗОНАНС //<br> ЗВ’ЯЗКИ
-    </div>
-
-    <div class="btn" id="confirm" style="display:none;" onclick="startPath()">
-        ПІДТВЕРДИТИ ВИБІР
-    </div>
-</div>
-
-<!-- ФУНДАМЕНТ -->
-<div class="screen" id="foundation">
-    <h1>ФУНДАМЕНТ</h1>
-    <p>
-        Ти не виправляєш систему.<br>
-        Ти утримуєш її вагу.
-    </p>
-
-    <div id="hold">УТРИМУВАТИ</div>
+  </div>
 </div>
 
 <script>
-/* MATRIX */
-const matrix = document.getElementById('matrix');
-const cols = Math.floor(window.innerWidth / 14);
-setInterval(() => {
-    let out = '';
-    for (let i = 0; i < 50; i++) {
-        for (let j = 0; j < cols; j++) {
-            out += Math.random() > 0.5 ? '1' : '0';
-        }
-        out += '\n';
-    }
-    matrix.textContent = out;
-}, 120);
+/* ===== MATRIX ===== */
+const c=document.getElementById("matrix"),
+ctx=c.getContext("2d");
+let w,h,cols;
+function resize(){
+  w=c.width=innerWidth;
+  h=c.height=innerHeight;
+  cols=Math.floor(w/16);
+}
+resize();onresize=resize;
 
-/* SCREENS */
-function show(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
+const chars="01";
+let drops=Array(cols).fill(0);
+
+function matrix(){
+  ctx.fillStyle="rgba(0,0,0,.25)";
+  ctx.fillRect(0,0,w,h);
+  ctx.fillStyle="#00ff9c";
+  ctx.font="16px monospace";
+  drops.forEach((y,i)=>{
+    ctx.fillText(chars[Math.random()>0.5?1:0],i*16,y*16);
+    if(y*16>h||Math.random()>.97)drops[i]=0;
+    drops[i]++;
+  });
+  requestAnimationFrame(matrix);
+}
+matrix();
+
+/* ===== FRACTURE ===== */
+const frac=document.getElementById("fracture");
+for(let i=0;i<14;i++){
+  const f=document.createElement("div");
+  f.className="frag";
+  f.style.top=Math.random()*100+"%";
+  f.style.left=Math.random()*100+"%";
+  f.style.width=120+Math.random()*220+"px";
+  f.style.height=40+Math.random()*120+"px";
+  f.style.setProperty("--dx",(Math.random()*80-40)+"px");
+  f.style.setProperty("--dy",(Math.random()*80-40)+"px");
+  frac.appendChild(f);
 }
 
-function goSelect() {
-    show('select');
-}
+/* ===== FOUNDATION LOGIC ===== */
+let entropy=78;
+let holding=false;
+let stabilized=false;
 
-/* PATH SELECTION */
-let selected = null;
-document.querySelectorAll('.path').forEach(p => {
-    p.onclick = () => {
-        selected = p.dataset.path;
-        document.querySelectorAll('.path').forEach(x => {
-            x.classList.toggle('active', x === p);
-            x.classList.toggle('dim', x !== p);
-        });
-        document.getElementById('confirm').style.display = 'block';
-    };
-});
+const ent=document.getElementById("entropy");
+const hold=document.getElementById("hold");
+const sys=document.getElementById("systemMsg");
 
-function startPath() {
-    if (selected === 'foundation') {
-        show('foundation');
-    } else {
-        alert('Цей шлях ще не активний');
-    }
-}
+hold.onmousedown=hold.ontouchstart=()=>{
+  holding=true;
+  hold.classList.add("active");
+};
+document.onmouseup=document.ontouchend=()=>{
+  holding=false;
+  hold.classList.remove("active");
+};
+
+setInterval(()=>{
+  if(stabilized)return;
+
+  if(holding){
+    entropy-=0.35;
+  }else{
+    entropy+=0.25;
+  }
+
+  entropy=Math.max(0,Math.min(100,entropy));
+  ent.textContent=Math.floor(entropy);
+
+  /* SYSTEM INTERFERENCE */
+  if(entropy>85){
+    sys.textContent="ПОМИЛКА СИНХРОНІЗАЦІЇ.";
+    sys.classList.remove("hidden");
+  }else if(entropy>70){
+    sys.textContent="СТАБІЛЬНІСТЬ НЕ ГАРАНТОВАНА.";
+    sys.classList.remove("hidden");
+  }else{
+    sys.classList.add("hidden");
+  }
+
+  /* VISUAL PRESSURE */
+  document.body.style.filter=
+    `blur(${entropy>85?1:0}px)`;
+
+  if(entropy<=1){
+    stabilized=true;
+    sys.textContent="ТИ УТРИМАВ СИСТЕМУ.";
+    sys.classList.remove("hidden");
+    hold.textContent="ЗАФІКСОВАНО";
+  }
+
+},80);
 </script>
 
 </body>
