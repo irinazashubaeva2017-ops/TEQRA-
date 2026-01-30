@@ -117,6 +117,7 @@ canvas{
   box-shadow:0 0 20px var(--red);
   animation:fracturePulse 1.1s infinite;
   z-index:5;
+  pointer-events:auto;
 }
 @keyframes fracturePulse{
   0%{transform:scale(.9);opacity:.6}
@@ -218,8 +219,8 @@ matrix();
 
 /* ===== FLOW ===== */
 setTimeout(()=>{
-  document.getElementById("prologue").classList.remove("active");
-  document.getElementById("choice").classList.add("active");
+  prologue.classList.remove("active");
+  choice.classList.add("active");
 },6000);
 
 /* ===== FOUNDATION GAME ===== */
@@ -232,33 +233,38 @@ const sys=document.getElementById("sys");
 const hold=document.getElementById("hold");
 
 function selectPath(p){
-  document.getElementById("choice").classList.remove("active");
+  choice.classList.remove("active");
   if(p==="foundation"){
-    document.getElementById("foundation").classList.add("active");
+    foundation.classList.add("active");
     startFoundation();
   }
 }
 
-hold.onmousedown=hold.ontouchstart=e=>{
+/* === HOLD (POINTER SAFE) === */
+hold.addEventListener("pointerdown",e=>{
   e.preventDefault();
   holding=true;
   hold.classList.add("active");
-};
-document.onmouseup=document.ontouchend=()=>{
+});
+document.addEventListener("pointerup",()=>{
   holding=false;
   hold.classList.remove("active");
-};
+});
 
+/* === FRACTURES === */
 function spawnFracture(){
   const f=document.createElement("div");
   f.className="fracture";
   f.style.top=Math.random()*80+"%";
   f.style.left=Math.random()*80+"%";
-  f.onclick=()=>{
+
+  f.addEventListener("pointerdown",e=>{
+    e.stopPropagation(); // 🔑 ВАЖНО
     entropy-=6;
     f.remove();
     fractures=fractures.filter(x=>x!==f);
-  };
+  });
+
   document.body.appendChild(f);
   fractures.push(f);
 }
