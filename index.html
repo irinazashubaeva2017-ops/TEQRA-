@@ -2,19 +2,23 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEQRA | System Access</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TEQRA | System Interface</title>
     <style>
         /* --- ГЛОБАЛЬНІ НАЛАШТУВАННЯ --- */
         :root {
             --bg-color: #020406;
-            --accent-main: #00f2ff;       /* Ціан (Система) */
-            --accent-secondary: #7000ff;  /* Фіолетовий (Ядро) */
+            --accent-main: #00f2ff;       /* Основний (Ціан) - змінюється JS */
+            --accent-secondary: #7000ff;  /* Вторинний (Фіолетовий) */
+            --alert-color: #ff3333;       /* Колір тривоги */
+            
             --role-foundation: #ff9d00;   /* Помаранчевий */
+            --role-architecture: #00f2ff; /* Ціан */
             --role-resonance: #ff00ea;    /* Маджента */
+            
             --text-main: #d1d9e0;
             --glass: rgba(255, 255, 255, 0.03);
-            --border: rgba(0, 242, 255, 0.2);
+            --border: rgba(255, 255, 255, 0.15);
             --font-stack: 'Courier New', Courier, monospace;
         }
 
@@ -23,7 +27,8 @@
             padding: 0;
             box-sizing: border-box;
             font-family: var(--font-stack);
-            user-select: none; /* Заборона виділення тексту для атмосфери */
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -36,21 +41,21 @@
             align-items: center;
             perspective: 1000px;
             cursor: crosshair;
+            transition: background-color 2s ease;
         }
 
-        /* --- ФОНОВІ ЕФЕКТИ --- */
+        /* --- ФОН ТА АТМОСФЕРА --- */
         
-        /* Світлове поле уваги (слідкує за курсором) */
+        /* Світло за курсором */
         .system-attention {
             position: fixed;
-            width: 300px;
-            height: 300px;
+            width: 300px; height: 300px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(0,242,255,0.12), rgba(112,0,255,0.05), transparent 70%);
+            background: radial-gradient(circle, rgba(255,255,255,0.08), transparent 60%);
             pointer-events: none;
             transform: translate(-50%, -50%);
-            mix-blend-mode: screen;
-            filter: blur(15px);
+            mix-blend-mode: overlay;
+            filter: blur(20px);
             opacity: 0;
             transition: opacity 0.6s ease;
             z-index: 0;
@@ -64,28 +69,30 @@
             background-image: 
                 linear-gradient(var(--border) 1px, transparent 1px),
                 linear-gradient(90deg, var(--border) 1px, transparent 1px);
-            background-size: 50px 50px;
+            background-size: 60px 60px;
             transform: rotateX(60deg) translateY(-50%) translateZ(-200px);
-            opacity: 0.15;
+            opacity: 0.12;
             z-index: -1;
             animation: gridMove 20s infinite linear;
+            transition: opacity 2s;
         }
 
         @keyframes gridMove {
             from { background-position: 0 0; }
-            to { background-position: 0 50px; }
+            to { background-position: 0 60px; }
         }
 
-        /* Scanline (Лінія сканування) */
+        /* Scanline */
         body::before {
             content: "";
             position: fixed;
-            top: 0; width: 100%; height: 2px;
-            background: rgba(0, 242, 255, 0.1);
+            top: 0; width: 100%; height: 3px;
+            background: rgba(255, 255, 255, 0.1);
             box-shadow: 0 0 10px var(--accent-main);
-            z-index: 100;
-            animation: scanline 4s infinite linear;
+            z-index: 200;
+            animation: scanline 5s infinite linear;
             pointer-events: none;
+            opacity: 0.5;
         }
 
         @keyframes scanline {
@@ -93,23 +100,22 @@
             100% { top: 110%; }
         }
 
-        /* --- КОНТЕЙНЕРИ ЕКРАНІВ (STAGES) --- */
+        /* --- КОНТЕЙНЕРИ ЕКРАНІВ --- */
         .stage {
             position: absolute;
             width: 90%;
             max-width: 700px;
-            padding: 40px;
+            padding: 30px;
             background: var(--glass);
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(15px);
             border: 1px solid var(--border);
             border-left: 4px solid var(--accent-main);
             opacity: 0;
             transform: scale(0.95) translateZ(-50px);
-            transition: opacity 1.2s ease, transform 1.2s ease;
-            pointer-events: none;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            transition: opacity 1s ease, transform 1s ease, border-color 1s;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.7);
             z-index: 10;
-            display: none; /* Приховано за замовчуванням */
+            display: none;
         }
 
         .stage.active {
@@ -119,46 +125,74 @@
             pointer-events: all;
         }
 
-        .wide-stage {
-            max-width: 1000px; /* Ширший контейнер для екрану вибору */
-        }
+        .wide-stage { max-width: 900px; }
 
         /* --- ТИПОГРАФІКА --- */
         .system-msg {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--accent-main);
             margin-bottom: 15px;
             text-transform: uppercase;
             letter-spacing: 2px;
             font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* Мигаючий курсор в тексті */
+        .system-msg::before {
+            content: "█";
+            animation: blink 1s infinite;
+            font-size: 0.6rem;
         }
 
+        @keyframes blink { 50% { opacity: 0; } }
+
         h1 {
-            font-size: 2rem;
-            letter-spacing: 5px;
-            margin-bottom: 20px;
+            font-size: 1.8rem;
+            letter-spacing: 4px;
+            margin-bottom: 15px;
             color: #fff;
             text-shadow: 0 0 15px var(--accent-main);
             text-transform: uppercase;
+            transition: text-shadow 1s;
         }
 
         p {
             line-height: 1.6;
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: var(--text-main);
         }
 
-        /* --- АНІМОВАНЕ ЯДРО (CORE) --- */
+        /* --- СИСТЕМНИЙ ЛОГ (ВНИЗУ) --- */
+        .system-log {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            color: var(--accent-main);
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s, color 0.5s;
+            text-shadow: 0 0 5px var(--accent-main);
+            width: 90%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* --- STAGE 2: ГЕОМЕТРИЧНЕ ЯДРО --- */
         .core-wrap {
             position: relative;
-            width: 140px; height: 140px;
+            width: 120px; height: 120px;
             margin: 0 auto 30px;
-            animation: coreBreath 7s ease-in-out infinite;
+            animation: coreBreath 6s ease-in-out infinite;
         }
 
         @keyframes coreBreath {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.06); }
+            50% { transform: scale(1.05); }
         }
 
         .orbit {
@@ -182,48 +216,184 @@
         .center-point {
             position: absolute;
             top: 50%; left: 50%;
-            width: 15px; height: 15px;
+            width: 10px; height: 10px;
             background: white;
-            box-shadow: 0 0 30px var(--accent-main), 0 0 60px var(--accent-main);
+            box-shadow: 0 0 20px var(--accent-main), 0 0 50px var(--accent-main);
             border-radius: 50%;
             transform: translate(-50%, -50%);
-            transition: box-shadow 1s;
         }
 
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* --- STAGE 4: ВИБІР (КАРТКИ) --- */
+        .archetypes-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 25px;
+            transition: opacity 0.5s;
         }
 
-        /* Стан аналізу (Активується JS) */
-        body.analyzing .center-point {
-            box-shadow: 0 0 25px var(--accent-main), 0 0 60px var(--accent-main), 0 0 100px var(--accent-secondary);
+        @media (min-width: 768px) {
+            .archetypes-grid { flex-direction: row; height: 320px; }
         }
 
-        /* --- КНОПКА --- */
+        .archetype-card {
+            flex: 1;
+            position: relative;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        /* Кольори */
+        .foundation { --role-color: var(--role-foundation); }
+        .architecture { --role-color: var(--role-architecture); }
+        .resonance { --role-color: var(--role-resonance); }
+
+        /* Hover */
+        .archetype-card:hover {
+            border-color: var(--role-color);
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .arch-icon {
+            font-size: 2.5rem;
+            color: var(--role-color);
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px var(--role-color);
+            transition: 0.3s;
+        }
+        
+        .archetype-card:hover .arch-icon { transform: scale(1.2); }
+
+        .arch-info h2 { font-size: 1rem; color: #fff; margin-bottom: 5px; text-shadow: none; }
+        .arch-info p { font-size: 0.8rem; color: #aaa; margin-top: 5px; }
+
+        /* Логіка блокування (LOCKED STATE) */
+        .archetypes-grid.locked { pointer-events: none; }
+        
+        .archetypes-grid.locked .archetype-card {
+            opacity: 0.1;
+            filter: grayscale(1) blur(4px);
+            transform: scale(0.9);
+        }
+
+        .archetypes-grid.locked .archetype-card.selected {
+            opacity: 1 !important;
+            filter: none !important;
+            transform: scale(1.05);
+            box-shadow: 0 0 50px var(--role-color);
+            border-color: #fff;
+            z-index: 50;
+        }
+
+        /* --- STAGE 5: НЕСТАБІЛЬНЕ ЯДРО (PLASMA) --- */
+        .core-monitor {
+            position: relative;
+            width: 250px; height: 250px;
+            margin: 20px auto;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .plasma-blob {
+            position: absolute;
+            width: 180px; height: 180px;
+            background: radial-gradient(circle at 30% 30%, #fff, var(--alert-color) 60%, #000);
+            border-radius: 50%;
+            box-shadow: 0 0 50px var(--alert-color), inset 0 0 30px #000;
+            animation: wobble 6s ease-in-out infinite alternate;
+            opacity: 0.9;
+            mix-blend-mode: screen;
+        }
+
+        /* Анімація рідини */
+        @keyframes wobble {
+            0% { border-radius: 50%; transform: scale(1); }
+            33% { border-radius: 58% 42% 75% 25% / 76% 46% 54% 24%; }
+            66% { border-radius: 50% 50% 33% 67% / 55% 27% 73% 45%; transform: scale(1.05); }
+            100% { border-radius: 33% 67% 58% 42% / 63% 68% 32% 37%; transform: scale(1); }
+        }
+
+        /* Індикатори */
+        .status-labels {
+            position: absolute; width: 100%; height: 100%;
+        }
+        .stat-val {
+            position: absolute;
+            font-size: 0.6rem;
+            color: var(--alert-color);
+            border: 1px solid var(--alert-color);
+            padding: 2px 6px;
+            background: rgba(0,0,0,0.8);
+        }
+
+        /* Кнопка Протоколу (Червона) */
+        .protocol-btn {
+            margin-top: 30px;
+            background: rgba(255, 51, 51, 0.05);
+            border: 1px solid var(--alert-color);
+            color: var(--alert-color);
+            padding: 15px 0;
+            width: 100%;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .protocol-btn:hover {
+            background: var(--alert-color);
+            color: #000;
+            box-shadow: 0 0 40px var(--alert-color);
+        }
+
+        /* --- ЕФЕКТИ --- */
+        
+        /* Звичайна кнопка */
         .btn {
-            margin-top: 40px;
-            padding: 15px 45px;
+            margin-top: 30px;
+            padding: 15px 40px;
             background: transparent;
             border: 1px solid var(--accent-main);
             color: var(--accent-main);
             cursor: pointer;
-            font-weight: bold;
-            font-size: 1rem;
             letter-spacing: 2px;
-            transition: 0.5s;
+            transition: 0.4s;
             clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
-            position: relative;
-            overflow: hidden;
         }
-
         .btn:hover {
             background: rgba(0, 242, 255, 0.15);
             color: #fff;
             box-shadow: 0 0 25px var(--accent-main);
         }
 
-        /* --- ПРОГРЕС БАРИ --- */
+        /* Glitch Effect (на тіло сторінки) */
+        .glitch-active {
+            animation: glitch-anim 0.2s cubic-bezier(.25, .46, .45, .94) both infinite;
+        }
+        @keyframes glitch-anim {
+            0% { transform: translate(0); filter: hue-rotate(0deg); }
+            20% { transform: translate(-3px, 3px); }
+            40% { transform: translate(-3px, -3px); filter: hue-rotate(90deg); }
+            60% { transform: translate(3px, 3px); }
+            80% { transform: translate(3px, -3px); }
+            100% { transform: translate(0); filter: hue-rotate(0deg); }
+        }
+
+        /* Лоадери */
         .loader-bar {
             width: 100%; height: 2px;
             background: rgba(255,255,255,0.1);
@@ -237,146 +407,35 @@
             transition: width 6s linear;
         }
 
-        /* --- ЕКРАН 4: ВИБІР ХРАНИТЕЛЯ (КАРТКИ) --- */
-        .archetypes-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            margin-top: 30px;
-        }
-
-        @media (min-width: 768px) {
-            .archetypes-grid {
-                flex-direction: row;
-                height: 350px;
-            }
-        }
-
-        .archetype-card {
-            flex: 1;
-            position: relative;
-            background: rgba(2, 4, 6, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            cursor: pointer;
-            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-
-        /* Кольори ролей */
-        .foundation { --role-color: var(--role-foundation); } 
-        .architecture { --role-color: var(--accent-main); }
-        .resonance { --role-color: var(--role-resonance); }
-
-        /* Ховер ефекти для карток */
-        .archetype-card:hover {
-            border-color: var(--role-color);
-            background: rgba(255, 255, 255, 0.03);
-            transform: scale(1.05) translateZ(20px);
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
-            z-index: 20;
-        }
-
-        /* Затемнення неактивних */
-        .archetypes-grid:hover .archetype-card:not(:hover) {
-            opacity: 0.4;
-            filter: blur(2px) grayscale(0.8);
-            transform: scale(0.95);
-        }
-
-        .arch-icon {
-            font-size: 2.5rem;
-            color: var(--role-color);
-            margin-bottom: 15px;
-            text-shadow: 0 0 10px var(--role-color);
-            transition: 0.4s;
-        }
-
-        .archetype-card:hover .arch-icon { transform: scale(1.2); }
-
-        .arch-info h2 {
-            font-size: 1.1rem;
-            color: #fff;
-            letter-spacing: 2px;
-            margin-bottom: 5px;
-            text-shadow: none;
-        }
-
-        .arch-meta {
-            font-size: 0.65rem;
-            color: var(--role-color);
-            margin-bottom: 15px;
-            opacity: 0.8;
-        }
-
-        .arch-info p {
-            font-size: 0.85rem;
-            color: #ccc;
-            opacity: 0.7; /* Видно завжди для зручності */
-            transition: 0.4s;
-        }
-
-        .archetype-card:hover .arch-info p { opacity: 1; color: #fff; }
-
-        .compatibility {
-            margin-top: 15px;
-            font-size: 0.75rem;
-            color: var(--role-color);
-            border: 1px solid var(--role-color);
-            padding: 4px 10px;
-            opacity: 0.8;
-        }
-
-        /* Стан вибраної картки */
-        .archetype-card.selected {
-            background: var(--role-color);
-            border-color: #fff;
-            transform: scale(1.1);
-            z-index: 100;
-            opacity: 1 !important;
-            filter: none !important;
-        }
-        
-        .archetype-card.selected * {
-            color: #000 !important;
-            text-shadow: none !important;
-            border-color: #000 !important;
-        }
     </style>
 </head>
 <body>
 
     <div class="system-attention" id="attention"></div>
-
     <div class="grid"></div>
 
     <div id="stage1" class="stage active">
         <div class="system-msg">> INITIALIZING_CONSCIOUSNESS...</div>
         <h1>TEQRA PROTOCOL</h1>
-        <p>Система прокидається. <br> Аналіз навколишнього середовища: <span style="color: #ff3333;">CRITICAL ERROR</span>.</p>
+        <p>Система прокидається. <br> Аналіз середовища: <span style="color: #ff3333;">CRITICAL ERROR</span>.</p>
         <div class="loader-bar"><div id="fill1" class="loader-fill"></div></div>
     </div>
 
     <div id="stage2" class="stage">
-        <div class="system-msg">> DATA_RETRIEVAL: YEAR_2026_REMNANTS</div>
+        <div class="system-msg">> DATA_RETRIEVAL: 2026_REMNANTS</div>
         <div class="core-wrap">
             <div class="orbit"></div>
             <div class="orbit-inner"></div>
             <div class="center-point"></div>
         </div>
-        <p>Ядро планети виснажене. Світловий день — 5 годин.<br>Світ балансує на межі остаточного збою.</p>
+        <p>Ядро планети виснажене. Світловий день — 5 годин.<br>Світ на межі остаточного збою.</p>
         <div class="loader-bar"><div id="fill2" class="loader-fill"></div></div>
     </div>
 
     <div id="stage3" class="stage">
         <div class="system-msg">> SYSTEM_READY</div>
         <h1>Вибраний об'єкт</h1>
-        <p>Ви — точка стабільності в океані хаосу. <br>Ваша присутність у TEQRA не випадкова.</p>
+        <p>Ви — точка стабільності в океані хаосу. <br>Ваша присутність тут не випадкова.</p>
         <button class="btn" onclick="startJourney()">АКТИВУВАТИ ШЛЯХ</button>
     </div>
 
@@ -389,9 +448,7 @@
                 <div class="arch-icon">■</div>
                 <div class="arch-info">
                     <h2>ФУНДАМЕНТ</h2>
-                    <div class="arch-meta">CODE: STABILITY</div>
-                    <p>Утримання ядра. Важкі рішення. Ти — щит, що стримує розпад.</p>
-                    <div class="compatibility">СУМІСНІСТЬ: 98.4%</div>
+                    <p>Стабільність. Утримання ядра. Важкі, незворотні рішення.</p>
                 </div>
             </div>
     
@@ -399,9 +456,7 @@
                 <div class="arch-icon">▲</div>
                 <div class="arch-info">
                     <h2>АРХІТЕКТУРА</h2>
-                    <div class="arch-meta">CODE: LOGIC</div>
-                    <p>Чистий розум. Контроль систем. Ти бачиш структуру в хаосі.</p>
-                    <div class="compatibility">СУМІСНІСТЬ: 99.1%</div>
+                    <p>Логіка. Структура. Ти бачиш порядок там, де інші бачать хаос.</p>
                 </div>
             </div>
     
@@ -409,48 +464,77 @@
                 <div class="arch-icon">●</div>
                 <div class="arch-info">
                     <h2>РЕЗОНАНС</h2>
-                    <div class="arch-meta">CODE: HARMONY</div>
-                    <p>Лікування світу. Відновлення. Ти — потік, що зшиває розломи.</p>
-                    <div class="compatibility">СУМІСНІСТЬ: 97.8%</div>
+                    <p>Гармонія. Лікування світу. Зшивання розломів реальності.</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        // --- 1. ЛОГІКА КУРСОРА ---
-        const attention = document.getElementById('attention');
+    <div id="stage5" class="stage">
+        <div class="system-msg" style="color: var(--alert-color);">
+            > WARNING: CORE INSTABILITY
+        </div>
+        <h1 style="color: #fff;">СЕКТОР: ZERO</h1>
+        
+        <div class="core-monitor">
+            <div class="plasma-blob"></div>
+            
+            <div class="status-labels">
+                <div class="stat-val" style="top: 0; left: 50%; transform: translateX(-50%);">INTEGRITY: 14%</div>
+                <div class="stat-val" style="bottom: 0; left: 50%; transform: translateX(-50%);">PRESSURE: MAX</div>
+                <div class="stat-val" style="top: 50%; left: 0;">ERR_704</div>
+                <div class="stat-val" style="top: 50%; right: 0;">TEMP: CRIT</div>
+            </div>
+        </div>
 
+        <p style="text-align: center; margin-top: 20px; font-size: 0.9rem; color: #888;">
+            Об'єкт не реагує на автоматичні алгоритми.<br>
+            Необхідне пряме втручання Хранителя.
+        </p>
+
+        <div class="protocol-btn" onclick="initiateFix()">
+            [ ІНІЦІЮВАТИ ПРОТОКОЛ ]
+        </div>
+    </div>
+
+    <div id="system-log" class="system-log"></div>
+
+    <script>
+        // --- 1. КУРСОР ---
+        const attention = document.getElementById('attention');
         function moveAttention(x, y) {
             attention.style.left = x + 'px';
             attention.style.top = y + 'px';
             attention.style.opacity = '1';
         }
-
-        document.addEventListener('mousemove', (e) => {
-            moveAttention(e.clientX, e.clientY);
-        });
+        document.addEventListener('mousemove', (e) => moveAttention(e.clientX, e.clientY));
         document.addEventListener('touchmove', (e) => {
             const t = e.touches[0];
             moveAttention(t.clientX, t.clientY);
         });
 
-        // --- 2. СЦЕНАРІЙ ПРОЛОГУ ---
+        // --- 2. СИСТЕМНИЙ ЛОГ ---
+        const logElement = document.getElementById('system-log');
+        function systemLog(text, color = null) {
+            if(color) logElement.style.color = color;
+            logElement.innerText = `> ${text}`;
+            logElement.style.opacity = '1';
+            // Ефект мигання
+            setTimeout(() => { logElement.style.opacity = '0.5'; }, 100);
+            setTimeout(() => { logElement.style.opacity = '1'; }, 200);
+        }
+
+        // --- 3. СЦЕНАРІЙ ПРОЛОГУ ---
         window.onload = function() {
-            // Stage 1 -> 2
             setTimeout(() => { document.getElementById('fill1').style.width = '100%'; }, 500);
             
             setTimeout(() => {
                 changeStage(1, 2);
-                document.body.classList.add('analyzing'); // Ядро починає світитися яскравіше
-                
-                // Stage 2 -> 3
                 setTimeout(() => { document.getElementById('fill2').style.width = '100%'; }, 500);
                 setTimeout(() => {
                     changeStage(2, 3);
-                    document.body.classList.remove('analyzing');
-                }, 8000); // 8 секунд на читання історії
-            }, 6000); // 6 секунд на завантаження
+                }, 8000); 
+            }, 6000);
         };
 
         function changeStage(from, to) {
@@ -463,7 +547,6 @@
             setTimeout(() => {
                 elFrom.classList.remove('active');
                 elTo.classList.add('active');
-                // Невелика затримка перед появою для плавності
                 setTimeout(() => {
                     elTo.style.opacity = '1';
                     elTo.style.transform = 'scale(1) translateZ(0)';
@@ -471,55 +554,72 @@
             }, 1000);
         }
 
-        // --- 3. ПЕРЕХІД ДО ВИБОРУ (STAGE 3 -> 4) ---
         function startJourney() {
-            const btn = document.querySelector('.btn');
+            const btn = document.querySelector('#stage3 .btn');
             btn.innerHTML = "СИНХРОНІЗАЦІЯ...";
             btn.style.pointerEvents = "none";
-            
-            // Перехід до екрану вибору
             setTimeout(() => {
                 changeStage(3, 4);
-                document.body.classList.add('analyzing');
             }, 1500);
         }
 
-        // --- 4. ЛОГІКА ВИБОРУ ХРАНИТЕЛЯ ---
+        // --- 4. ВИБІР ХРАНИТЕЛЯ ---
         function selectArchetype(type) {
-            // Блокуємо грід
             const grid = document.querySelector('.archetypes-grid');
-            grid.style.pointerEvents = "none";
+            if (grid.classList.contains('locked')) return;
 
-            // Візуальний вибір
-            const selectedCard = document.querySelector(`.archetype-card.${type}`);
-            selectedCard.classList.add('selected');
+            // Блокування
+            grid.classList.add('locked');
+            const card = document.querySelector(`.archetype-card.${type}`);
+            card.classList.add('selected');
 
-            // Зміна заголовка
-            const title = document.getElementById('analysis-title');
-            title.innerText = "ІДЕНТИФІКАЦІЮ ЗАВЕРШЕНО";
-            title.style.color = getComputedStyle(selectedCard).getPropertyValue('--role-color');
+            // Кольори
+            const roleColor = getComputedStyle(card).getPropertyValue('--role-color');
+            const roleName = card.querySelector('h2').innerText;
 
-            // Збереження
-            localStorage.setItem('teqra_guardian_role', type);
+            // Лог
+            systemLog(`ANALYZING: ${roleName}...`);
 
-            // Фінальний вихід
+            // Таймінг прийняття рішення
             setTimeout(() => {
-                // Ховаємо інші картки
-                document.querySelectorAll('.archetype-card:not(.selected)').forEach(card => {
-                    card.style.opacity = '0';
-                    card.style.transform = 'scale(0)';
-                });
+                systemLog(`ROLE LOCKED: ${roleName}`, roleColor);
+                document.getElementById('analysis-title').innerText = "ПІДТВЕРДЖЕНО";
+                document.getElementById('analysis-title').style.color = roleColor;
+                
+                // Глітч ефект
+                document.body.classList.add('glitch-active');
+                setTimeout(() => document.body.classList.remove('glitch-active'), 300);
 
-                // Повний фейд
-                setTimeout(() => {
-                    document.body.style.transition = "opacity 2s ease";
-                    document.body.style.opacity = "0";
-                    setTimeout(() => {
-                        alert(`ВІТАЮ. ТЕПЕР ТИ — ХРАНИТЕЛЬ [${type.toUpperCase()}].\nЗавантаження ігрового світу...`);
-                        location.reload(); // Перезапуск демо
-                    }, 2000);
-                }, 1000);
-            }, 800);
+                localStorage.setItem('teqra_role', type);
+            }, 1000);
+
+            // Перехід до Stage 5 (Ядро)
+            setTimeout(() => {
+                changeStage(4, 5);
+                
+                // Зміна теми на ТРИВОГУ
+                document.documentElement.style.setProperty('--accent-main', '#ff3333');
+                document.querySelector('.grid').style.opacity = '0.05';
+                
+                systemLog("CONNECTION ESTABLISHED. WARNING: UNSTABLE.", "#ff3333");
+            }, 3500);
+        }
+
+        // --- 5. ФІНАЛ ПРОЛОГУ ---
+        function initiateFix() {
+            const btn = document.querySelector('.protocol-btn');
+            btn.innerHTML = "ЗАВАНТАЖЕННЯ...";
+            btn.style.letterSpacing = "1px";
+            
+            systemLog("INJECTING CODE...");
+            
+            // Прискорення анімації ядра
+            document.querySelector('.plasma-blob').style.animationDuration = "0.2s";
+            
+            setTimeout(() => {
+                alert("ПРОТОКОЛ ЗАПУЩЕНО. (Кінець демо-версії)");
+                location.reload();
+            }, 2500);
         }
     </script>
 </body>
