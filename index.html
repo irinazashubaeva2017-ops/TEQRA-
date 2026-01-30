@@ -1,224 +1,740 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>TEQRA</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TEQRA: SYSTEM PROTOCOL</title>
+    <style>
+        :root {
+            --bg: #050505;
+            --primary: #00f2ff; /* TEQRA Cyan */
+            --secondary: #2d2d2d;
+            --alert: #ff2a2a;
+            --text: #e0e0e0;
+            --font-main: 'Courier New', Courier, monospace;
+        }
 
-<style>
-*{margin:0;padding:0;box-sizing:border-box;user-select:none}
-html,body{width:100%;height:100%;background:#000;color:#eaeaea;font-family:Courier New,monospace;overflow:hidden}
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-:root{
---green:#00ff9c;
---red:#ff4d4d;
---gold:#ffb86b;
-}
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-main);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
 
-canvas{position:fixed;inset:0;z-index:1}
+        /* --- UI Overlay --- */
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+        }
 
-.screen{
-position:fixed;inset:0;z-index:3;
-display:flex;justify-content:center;align-items:center;
-opacity:0;pointer-events:none;transition:1s;
-}
-.screen.active{opacity:1;pointer-events:auto}
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 12px;
+            opacity: 0.8;
+        }
 
-.panel{max-width:760px;padding:24px;text-align:center}
-.line{margin:14px 0;font-size:18px}
-.glitch{animation:glitch 1.2s infinite}
-@keyframes glitch{
-50%{text-shadow:-2px 0 red,2px 0 cyan}
-}
+        .status-bar {
+            width: 100%;
+            height: 2px;
+            background: var(--secondary);
+            margin-top: 10px;
+            position: relative;
+        }
 
-#hud{
-position:fixed;top:10px;left:50%;
-transform:translateX(-50%);
-z-index:6;font-size:18px;color:var(--red);
-}
+        .status-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 50%;
+            transition: width 0.1s linear;
+            box-shadow: 0 0 10px var(--primary);
+        }
 
-#controls{
-position:fixed;top:10px;right:10px;z-index:6;
-}
-.btn{
-border:1px solid #555;color:#aaa;
-padding:6px 10px;margin-left:6px;
-cursor:pointer;font-size:12px;
-}
-.btn:hover{background:#111}
+        .controls {
+            pointer-events: auto;
+            display: flex;
+            gap: 15px;
+        }
 
-.fracture{
-position:fixed;width:90px;height:90px;
-background:#000;border:2px solid var(--red);
-box-shadow:0 0 25px var(--red);
-z-index:5;animation:pulse 1s infinite;
-}
-.false{border-style:dashed;opacity:.6}
+        button {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 10px 20px;
+            font-family: var(--font-main);
+            text-transform: uppercase;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
 
-@keyframes pulse{
-50%{transform:scale(1.1)}
-}
+        button:hover {
+            background: rgba(0, 242, 255, 0.1);
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+        }
 
-body.chaos{animation:shake .12s infinite}
-@keyframes shake{
-25%{transform:translate(2px,-2px)}
-50%{transform:translate(-2px,2px)}
-}
-</style>
+        button:active {
+            transform: scale(0.98);
+        }
+
+        /* --- Screens --- */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 5, 5, 0.95);
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .screen.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+            text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+            letter-spacing: 5px;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            font-weight: normal;
+            border-bottom: 1px solid var(--secondary);
+            padding-bottom: 10px;
+        }
+
+        p {
+            max-width: 600px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .role-cards {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .role-card {
+            border: 1px solid var(--secondary);
+            padding: 20px;
+            width: 140px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .role-card:hover {
+            border-color: var(--primary);
+            background: rgba(0, 242, 255, 0.05);
+        }
+
+        .role-title {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .role-desc {
+            font-size: 10px;
+            color: #888;
+        }
+
+        /* --- Canvas --- */
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .hidden { display: none !important; }
+        
+        .notification {
+            position: absolute;
+            bottom: 100px;
+            color: var(--primary);
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+    </style>
 </head>
-
 <body>
 
-<canvas id="matrix"></canvas>
-<div id="hud">РОЗПАД: 100%</div>
+    <canvas id="gameCanvas"></canvas>
 
-<div id="controls">
-  <span class="btn" onclick="togglePause()">ПАУЗА</span>
-  <span class="btn" onclick="resetGame()">СКИНУТИ</span>
-</div>
+    <div id="ui-layer" class="hidden">
+        <div class="header">
+            <div>TEQRA <span id="protocol-id">V.1.0</span></div>
+            <div>STATUS: <span id="score-display">0</span> CYCLES</div>
+        </div>
+        
+        <div class="notification" id="notification">SYSTEM STABILIZED</div>
 
-<div id="prologue" class="screen active">
-  <div class="panel">
-    <div class="line">СИСТЕМА ТРІЩИТЬ.</div>
-    <div class="line glitch">ФУНДАМЕНТ ВТРАТИВ ФОРМУ.</div>
-    <div class="line">ОБЕРИ ШЛЯХ.</div>
-  </div>
-</div>
+        <div style="width:100%; max-width: 400px; align-self: center;">
+            <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 5px;">
+                <span>ENTROPY</span>
+                <span id="entropy-text">0%</span>
+            </div>
+            <div class="status-bar">
+                <div class="status-fill" id="entropy-bar"></div>
+            </div>
+        </div>
 
-<div id="choice" class="screen">
-  <div class="panel">
-    <div class="line">ФУНДАМЕНТ // СТІЙКІСТЬ</div>
-    <div class="btn" onclick="startFoundation()">ПОЧАТИ</div>
-  </div>
-</div>
+        <div class="controls" style="align-self: flex-end;">
+            <button id="btn-pause">II</button>
+        </div>
+    </div>
 
-<div id="foundation" class="screen">
-  <div class="panel">
-    <div class="line" style="color:var(--gold)">ГЛАВА I — ФУНДАМЕНТ</div>
-    <div class="line">ТИ НЕ ВИПРАВЛЯЄШ.</div>
-    <div class="line">ТИ УТРИМУЄШ СТРУКТУРУ.</div>
-    <div class="line glitch" id="status"></div>
-  </div>
-</div>
+    <div id="screen-prologue" class="screen active">
+        <h1>TEQRA</h1>
+        <p>
+            Система досягла межі складності.<br>
+            Внутрішні зв'язки суперечать самі собі.<br>
+            Ентропія зростає.
+        </p>
+        <p>
+            Ви — не герой.<br>
+            Ви — функція виправлення.<br>
+            Протокол запущено.
+        </p>
+        <button onclick="Game.toChoice()">INITIALIZE</button>
+    </div>
+
+    <div id="screen-choice" class="screen">
+        <h2>ВИБЕРІТЬ ПРОТОКОЛ</h2>
+        <p>Архітектура вашої взаємодії з системою.</p>
+        
+        <div class="role-cards">
+            <div class="role-card" onclick="Game.selectRole('foundation')">
+                <div class="role-title">ФУНДАМЕНТ</div>
+                <div class="role-desc">СТІЙКІСТЬ.<br>Утримуйте цілісність. Відсіюйте ілюзії.</div>
+            </div>
+            <div class="role-card" onclick="Game.selectRole('architect')">
+                <div class="role-title">АРХІТЕКТОР</div>
+                <div class="role-desc">ЛОГІКА.<br>Оптимізуйте зв'язки. Видаляйте зайве.</div>
+            </div>
+            <div class="role-card" onclick="Game.selectRole('resonance')">
+                <div class="role-title">РЕЗОНАНС</div>
+                <div class="role-desc">ЗВ'ЯЗКИ.<br>Синхронізація ритмів. Відчуйте пульс.</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-pause" class="screen">
+        <h2>PAUSED</h2>
+        <p>Виконання зупинено.</p>
+        <button onclick="Game.resume()">RESUME</button>
+        <button onclick="Game.reset()" style="margin-top: 10px; border-color: var(--alert); color: var(--alert);">REBOOT SYSTEM</button>
+    </div>
+
+    <div id="screen-gameover" class="screen">
+        <h2 style="color: var(--alert)">CRITICAL FAILURE</h2>
+        <p>Рівень ентропії досяг 100%.<br>Система дестабілізована.</p>
+        <div style="margin-bottom: 20px;">ПРОЖИТО ЦИКЛІВ: <span id="final-score">0</span></div>
+        <button onclick="Game.reset()">RESTART PROTOCOL</button>
+    </div>
 
 <script>
-/* ===== MATRIX ===== */
-const c=document.getElementById("matrix"),x=c.getContext("2d");
-let w,h,cols,paused=false;
-function resize(){w=c.width=innerWidth;h=c.height=innerHeight;cols=Math.floor(w/16)}
-resize();onresize=resize;
-let drops=Array(cols).fill(0);
-function matrix(){
-if(paused) return requestAnimationFrame(matrix);
-x.fillStyle="rgba(0,0,0,.35)";
-x.fillRect(0,0,w,h);
-x.fillStyle="#00ff9c";
-x.font="16px monospace";
-drops.forEach((y,i)=>{
-x.fillText(Math.random()>.5?"1":"0",i*16,y*16);
-if(y*16>h||Math.random()>.96)drops[i]=0;
-drops[i]++;
-});
-requestAnimationFrame(matrix);
-}
-matrix();
+/**
+ * TEQRA SYSTEM CORE
+ * Single file architecture for stability and performance.
+ */
 
-/* ===== FLOW ===== */
-setTimeout(()=>{
-prologue.classList.remove("active");
-choice.classList.add("active");
-},4000);
-
-/* ===== GAME STATE ===== */
-let entropy=100;
-let fractures=[];
-let loop=null;
-
-function save(){
-localStorage.setItem("teqra_save",JSON.stringify({entropy}));
-}
-
-function load(){
-const s=localStorage.getItem("teqra_save");
-if(s) entropy=JSON.parse(s).entropy;
-}
-
-function updateHUD(){
-entropy=Math.max(0,Math.min(100,entropy));
-hud.textContent="РОЗПАД: "+entropy+"%";
-save();
-}
-
-function spawnFracture(forceReal=false){
-const f=document.createElement("div");
-f.className="fracture";
-if(!forceReal && Math.random()<0.4) f.classList.add("false");
-f.style.top=Math.random()*70+"%";
-f.style.left=Math.random()*70+"%";
-
-f.onclick=()=>{
-if(paused) return;
-if(f.classList.contains("false")){
-f.style.top=Math.random()*70+"%";
-f.style.left=Math.random()*70+"%";
-entropy+=2;
-}else{
-entropy-=10;
-f.remove();
-fractures=fractures.filter(x=>x!==f);
-}
-updateHUD();
+const CONFIG = {
+    colors: {
+        bg: '#050505',
+        primary: '#00f2ff',
+        alert: '#ff2a2a',
+        ghost: 'rgba(255, 255, 255, 0.1)',
+        safe: '#00ff44'
+    },
+    maxEntropy: 100,
+    baseSpeed: 1
 };
 
-document.body.appendChild(f);
-fractures.push(f);
+// --- ENGINE ---
+const Canvas = document.getElementById('gameCanvas');
+const Ctx = Canvas.getContext('2d');
+let Width, Height;
+
+function resize() {
+    Width = window.innerWidth;
+    Height = window.innerHeight;
+    Canvas.width = Width;
+    Canvas.height = Height;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// --- STATE MANAGEMENT ---
+const Game = {
+    state: 'PROLOGUE', // PROLOGUE, CHOICE, PLAYING, PAUSED, GAMEOVER
+    role: null,
+    entropy: 0,
+    score: 0,
+    level: 1,
+    entities: [],
+    particles: [],
+    lastTime: 0,
+    spawnTimer: 0,
+    
+    // Setup
+    toChoice: () => {
+        document.getElementById('screen-prologue').classList.remove('active');
+        document.getElementById('screen-choice').classList.add('active');
+        Game.restoreProgress();
+    },
+
+    selectRole: (role) => {
+        Game.role = role;
+        Game.start();
+    },
+
+    start: () => {
+        document.getElementById('screen-choice').classList.remove('active');
+        document.getElementById('ui-layer').classList.remove('hidden');
+        Game.state = 'PLAYING';
+        Game.entropy = 50; // Start at middle
+        Game.score = 0;
+        Game.entities = [];
+        Game.particles = [];
+        Game.lastTime = performance.now();
+        requestAnimationFrame(Game.loop);
+    },
+
+    pause: () => {
+        if(Game.state === 'PLAYING') {
+            Game.state = 'PAUSED';
+            document.getElementById('screen-pause').classList.add('active');
+        }
+    },
+
+    resume: () => {
+        if(Game.state === 'PAUSED') {
+            Game.state = 'PLAYING';
+            document.getElementById('screen-pause').classList.remove('active');
+            Game.lastTime = performance.now();
+            requestAnimationFrame(Game.loop);
+        }
+    },
+
+    gameOver: () => {
+        Game.state = 'GAMEOVER';
+        document.getElementById('final-score').innerText = Math.floor(Game.score);
+        document.getElementById('screen-gameover').classList.add('active');
+        localStorage.removeItem('teqra_save');
+    },
+
+    reset: () => {
+        localStorage.removeItem('teqra_save');
+        location.reload();
+    },
+
+    // Persistence
+    saveProgress: () => {
+        if(Game.state === 'PLAYING') {
+            const data = {
+                role: Game.role,
+                score: Game.score,
+                entropy: Game.entropy
+            };
+            localStorage.setItem('teqra_save', JSON.stringify(data));
+        }
+    },
+
+    restoreProgress: () => {
+        const saved = localStorage.getItem('teqra_save');
+        if (saved) {
+            const data = JSON.parse(saved);
+            // Optionally auto-load or just acknowledge
+            console.log("Archive found:", data);
+        }
+    }
+};
+
+// --- INPUT HANDLING ---
+document.getElementById('btn-pause').addEventListener('click', Game.pause);
+
+Canvas.addEventListener('mousedown', handleInput);
+Canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    handleInput(e.touches[0]);
+}, {passive: false});
+
+function handleInput(e) {
+    if (Game.state !== 'PLAYING') return;
+    
+    const rect = Canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Create click effect
+    createParticles(x, y, 5, CONFIG.colors.primary);
+
+    // Logic based on Role
+    let hit = false;
+    
+    // Reverse iteration to click top elements first
+    for (let i = Game.entities.length - 1; i >= 0; i--) {
+        const ent = Game.entities[i];
+        
+        if (ent.checkClick(x, y)) {
+            hit = true;
+            processInteraction(ent);
+            if (ent.dead) Game.entities.splice(i, 1);
+            break; // Handle one entity per click
+        }
+    }
+
+    // Penalty for clicking nothing (noise)
+    if (!hit) {
+        Game.entropy += 2;
+        createParticles(x, y, 2, CONFIG.colors.alert);
+    }
 }
 
-function ensureRealFracture(){
-if(!fractures.some(f=>!f.classList.contains("false")))
-spawnFracture(true);
+function processInteraction(ent) {
+    if (Game.role === 'foundation') {
+        if (ent.type === 'real') {
+            Game.entropy -= 5;
+            Game.score += 10;
+            ent.dead = true;
+        } else {
+            // Phantom clicked
+            Game.entropy += 10;
+            createParticles(ent.x, ent.y, 10, CONFIG.colors.alert);
+            ent.dead = true;
+        }
+    } 
+    else if (Game.role === 'architect') {
+        if (ent.isRedundant) {
+            Game.entropy -= 4;
+            Game.score += 15;
+            ent.dead = true;
+        } else {
+            Game.entropy += 8; // Broke important link
+            ent.dead = true;
+        }
+    }
+    else if (Game.role === 'resonance') {
+        // Distance from perfect sync
+        const dist = Math.abs(ent.radius - ent.targetRadius);
+        if (dist < 15) {
+            Game.entropy -= 6;
+            Game.score += 20;
+            ent.dead = true;
+            createParticles(ent.x, ent.y, 15, CONFIG.colors.safe);
+        } else {
+            Game.entropy += 5; // Bad timing
+            createParticles(ent.x, ent.y, 5, CONFIG.colors.alert);
+        }
+    }
 }
 
-function startFoundation(){
-choice.classList.remove("active");
-foundation.classList.add("active");
-load();updateHUD();
+// --- ENTITIES CLASSES ---
 
-loop=setInterval(()=>{
-if(paused) return;
-
-entropy+=fractures.length*0.4;
-ensureRealFracture();
-
-if(Math.random()<0.6 && fractures.length<8) spawnFracture();
-
-if(entropy>75){
-status.textContent="СТРУКТУРА РОЗПАДАЄТЬСЯ.";
-document.body.classList.add("chaos");
-}else{
-status.textContent="";
-document.body.classList.remove("chaos");
+class Entity {
+    constructor() {
+        this.dead = false;
+        this.age = 0;
+    }
+    update(dt) {}
+    draw(ctx) {}
+    checkClick(mx, my) { return false; }
 }
 
-if(entropy<=0){
-status.textContent="ФУНДАМЕНТ УТРИМАНО.";
-clearInterval(loop);
-fractures.forEach(f=>f.remove());
-}
-updateHUD();
-},450);
+// 1. FOUNDATION: Blocks (Stabilize real ones, ignore ghosts)
+class Block extends Entity {
+    constructor() {
+        super();
+        this.size = 40 + Math.random() * 30;
+        this.x = Math.random() * (Width - this.size);
+        this.y = Math.random() * (Height - this.size);
+        this.type = Math.random() > 0.3 ? 'real' : 'phantom';
+        this.life = 3000; // ms
+        
+        // Phantoms drift, Real ones shake
+        this.vx = this.type === 'phantom' ? (Math.random() - 0.5) * 2 : 0;
+        this.vy = this.type === 'phantom' ? (Math.random() - 0.5) * 2 : 0;
+    }
+
+    update(dt) {
+        this.life -= dt;
+        if (this.life <= 0) {
+            this.dead = true;
+            if (this.type === 'real') Game.entropy += 5; // Missed a real instability
+        }
+        
+        this.x += this.vx;
+        this.y += this.vy;
+        
+        if (this.type === 'real') {
+            // Jitter effect
+            this.drawX = this.x + (Math.random() - 0.5) * 4;
+            this.drawY = this.y + (Math.random() - 0.5) * 4;
+        } else {
+            this.drawX = this.x;
+            this.drawY = this.y;
+        }
+    }
+
+    draw(ctx) {
+        ctx.strokeStyle = this.type === 'real' ? CONFIG.colors.primary : CONFIG.colors.ghost;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(this.drawX, this.drawY, this.size, this.size);
+        
+        // Inner detail
+        ctx.fillStyle = this.type === 'real' ? 'rgba(0, 242, 255, 0.1)' : 'transparent';
+        ctx.fillRect(this.drawX, this.drawY, this.size, this.size);
+    }
+
+    checkClick(mx, my) {
+        return mx > this.x && mx < this.x + this.size &&
+               my > this.y && my < this.y + this.size;
+    }
 }
 
-function togglePause(){
-paused=!paused;
-status.textContent=paused?"ПАУЗА":"";
+// 2. ARCHITECT: Nodes (Cut red links)
+class NodeLink extends Entity {
+    constructor() {
+        super();
+        this.x = Math.random() * (Width - 100) + 50;
+        this.y = Math.random() * (Height - 100) + 50;
+        this.radius = 20;
+        this.isRedundant = Math.random() > 0.4; // Target to click
+        this.life = 4000;
+        
+        // Connect to a random point
+        this.targetX = this.x + (Math.random() - 0.5) * 200;
+        this.targetY = this.y + (Math.random() - 0.5) * 200;
+    }
+
+    update(dt) {
+        this.life -= dt;
+        if (this.life <= 0) {
+            this.dead = true;
+            if (this.isRedundant) Game.entropy += 5; // Failed to optimize
+        }
+    }
+
+    draw(ctx) {
+        // Line
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.targetX, this.targetY);
+        ctx.strokeStyle = this.isRedundant ? CONFIG.colors.alert : '#fff';
+        ctx.lineWidth = this.isRedundant ? 2 : 1;
+        ctx.stroke();
+
+        // Node
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 5, 0, Math.PI*2);
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+        
+        // Interaction Zone Indicator
+        if (this.isRedundant) {
+            ctx.beginPath();
+            ctx.arc((this.x+this.targetX)/2, (this.y+this.targetY)/2, 10, 0, Math.PI*2);
+            ctx.strokeStyle = CONFIG.colors.alert;
+            ctx.stroke();
+        }
+    }
+
+    checkClick(mx, my) {
+        // Click near the center of the line
+        const cx = (this.x + this.targetX) / 2;
+        const cy = (this.y + this.targetY) / 2;
+        const dist = Math.hypot(mx - cx, my - cy);
+        return dist < 30;
+    }
 }
 
-function resetGame(){
-localStorage.removeItem("teqra_save");
-location.reload();
+// 3. RESONANCE: Pulses (Sync timing)
+class Pulse extends Entity {
+    constructor() {
+        super();
+        this.x = Math.random() * (Width - 100) + 50;
+        this.y = Math.random() * (Height - 100) + 50;
+        this.maxRadius = 60;
+        this.radius = 0;
+        this.targetRadius = 40 + Math.random() * 10;
+        this.speed = 0.5 + Math.random() * 0.5;
+        this.life = 5000; // fallback
+    }
+
+    update(dt) {
+        this.radius += this.speed;
+        
+        // If passed target significantly, fail
+        if (this.radius > this.targetRadius + 20) {
+            this.dead = true;
+            Game.entropy += 5; // Missed beat
+        }
+    }
+
+    draw(ctx) {
+        // Growing wave
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+        ctx.strokeStyle = CONFIG.colors.primary;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Target Zone
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.targetRadius, 0, Math.PI*2);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+
+    checkClick(mx, my) {
+        const dist = Math.hypot(mx - this.x, my - this.y);
+        return dist < this.maxRadius;
+    }
 }
+
+class Particle {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.vx = (Math.random() - 0.5) * 5;
+        this.vy = (Math.random() - 0.5) * 5;
+        this.life = 1.0;
+    }
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.life -= 0.05;
+    }
+    draw(ctx) {
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, 2, 2);
+        ctx.globalAlpha = 1;
+    }
+}
+
+function createParticles(x, y, count, color) {
+    for(let i=0; i<count; i++) {
+        Game.particles.push(new Particle(x, y, color));
+    }
+}
+
+// --- MAIN LOOP ---
+
+Game.loop = (timestamp) => {
+    if (Game.state !== 'PLAYING') return;
+
+    const dt = timestamp - Game.lastTime;
+    Game.lastTime = timestamp;
+
+    // 1. Clear
+    Ctx.fillStyle = 'rgba(5, 5, 5, 0.3)'; // Trail effect
+    Ctx.fillRect(0, 0, Width, Height);
+
+    // 2. Spawning Logic
+    Game.spawnTimer += dt;
+    // Difficulty scaling: spawn faster as score increases
+    const spawnRate = Math.max(500, 2000 - (Game.score * 5)); 
+    
+    if (Game.spawnTimer > spawnRate) {
+        Game.spawnTimer = 0;
+        if (Game.role === 'foundation') Game.entities.push(new Block());
+        if (Game.role === 'architect') Game.entities.push(new NodeLink());
+        if (Game.role === 'resonance') Game.entities.push(new Pulse());
+    }
+
+    // 3. Update & Draw Entities
+    for (let i = Game.entities.length - 1; i >= 0; i--) {
+        const ent = Game.entities[i];
+        ent.update(dt);
+        ent.draw(Ctx);
+        if (ent.dead) Game.entities.splice(i, 1);
+    }
+
+    // 4. Particles
+    for (let i = Game.particles.length - 1; i >= 0; i--) {
+        const p = Game.particles[i];
+        p.update();
+        p.draw(Ctx);
+        if (p.life <= 0) Game.particles.splice(i, 1);
+    }
+
+    // 5. Game Logic (Entropy)
+    // Passive entropy creep
+    Game.entropy += 0.01; 
+    
+    // Clamp
+    if (Game.entropy < 0) Game.entropy = 0;
+    if (Game.entropy > 100) Game.gameOver();
+
+    // 6. UI Updates
+    document.getElementById('score-display').innerText = Math.floor(Game.score);
+    document.getElementById('entropy-text').innerText = Math.floor(Game.entropy) + '%';
+    
+    const bar = document.getElementById('entropy-bar');
+    bar.style.width = Game.entropy + '%';
+    
+    // Color shift based on danger
+    if (Game.entropy > 80) bar.style.backgroundColor = CONFIG.colors.alert;
+    else bar.style.backgroundColor = CONFIG.colors.primary;
+
+    // Save periodically (every ~5 seconds approx)
+    if (Math.floor(timestamp / 1000) % 5 === 0) Game.saveProgress();
+
+    requestAnimationFrame(Game.loop);
+};
+
 </script>
-
 </body>
 </html>
