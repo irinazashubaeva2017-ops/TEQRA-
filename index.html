@@ -1,173 +1,209 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TEQRA | Фундамент</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TEQRA // SYSTEM</title>
 
 <style>
-:root {
-    --bg: #050507;
-    --text: rgba(255,255,255,0.85);
-    --muted: rgba(255,255,255,0.45);
-    --accent: #ffb347;
-    --fracture: 0px;
+:root{
+  --bg:#000;
+  --green:#00ff9c;
+  --amber:#ffb454;
+  --cyan:#6fdcff;
+  --violet:#c77dff;
+  --white:rgba(255,255,255,0.85);
 }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    user-select: none;
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+  background:var(--bg);
+  color:var(--white);
+  font-family: "Courier New", monospace;
+  height:100vh;
+  overflow:hidden;
 }
 
-body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    height: 100vh;
-    overflow: hidden;
+/* ===== BINARY BACKGROUND ===== */
+#matrix{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  opacity:0.25;
+  pointer-events:none;
 }
 
-/* ДВОИЧНЫЙ ФОН */
-.binary {
-    position: fixed;
-    inset: 0;
-    font-family: monospace;
-    font-size: 14px;
-    color: rgba(255,255,255,0.05);
-    line-height: 1.2;
-    white-space: pre-wrap;
-    animation: drift 20s linear infinite;
+/* ===== MAIN LAYER ===== */
+#ui{
+  position:relative;
+  z-index:2;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
 }
 
-@keyframes drift {
-    from { transform: translateY(0); }
-    to { transform: translateY(-50%); }
+/* ===== TEXT BLOCK ===== */
+.panel{
+  max-width:520px;
+  width:100%;
+  text-align:center;
+  animation:fadeIn 1.2s ease forwards;
 }
 
-/* КОНТЕЙНЕР ТЕКСТА */
-.stage {
-    position: relative;
-    z-index: 2;
-    max-width: 700px;
-    margin: auto;
-    padding: 15vh 20px;
-    transform: translateX(var(--fracture));
-    transition: transform 0.3s ease;
+p{
+  margin:14px 0;
+  line-height:1.6;
+  letter-spacing:0.04em;
 }
 
-/* ТЕКСТ */
-.line {
-    font-size: 1.1rem;
-    line-height: 1.7;
-    margin-bottom: 20px;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 1s ease, transform 1s ease;
+.system{
+  color:var(--green);
+  opacity:0.9;
 }
 
-.line.show {
-    opacity: 1;
-    transform: translateY(0);
+.command{
+  margin-top:40px;
+  color:var(--amber);
+  letter-spacing:0.3em;
+  font-weight:bold;
 }
 
-/* ИНСТРУКЦИЯ */
-.hold {
-    position: fixed;
-    bottom: 40px;
-    width: 100%;
-    text-align: center;
-    font-size: 0.9rem;
-    letter-spacing: 0.25em;
-    color: var(--muted);
-    opacity: 0;
-    transition: opacity 0.5s;
+/* ===== OPTIONS ===== */
+.options{
+  margin-top:40px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
 }
 
-.hold.active {
-    opacity: 1;
-    color: var(--accent);
+.option{
+  border:1px solid rgba(255,255,255,0.2);
+  padding:16px;
+  cursor:pointer;
+  transition:0.3s;
+  letter-spacing:0.15em;
+}
+
+.option:hover{
+  background:rgba(255,255,255,0.05);
+}
+
+.option.foundation{color:var(--amber)}
+.option.arch{color:var(--cyan)}
+.option.res{color:var(--violet)}
+
+.option:active{
+  transform:scale(0.97);
+}
+
+/* ===== TRANSITION ===== */
+.fade-out{
+  animation:fadeOut 1s ease forwards;
+}
+
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(10px)}
+  to{opacity:1; transform:none}
+}
+
+@keyframes fadeOut{
+  to{opacity:0; transform:translateY(-10px)}
 }
 </style>
 </head>
 
 <body>
 
-<div class="binary" id="binary"></div>
+<canvas id="matrix"></canvas>
 
-<div class="stage" id="stage">
-    <div class="line">Система втратила центр.</div>
-    <div class="line">Дані більше не сходяться в одній точці.</div>
-    <div class="line">Щоб світ не розпався, потрібна вага.</div>
-    <div class="line">Не рішення.</div>
-    <div class="line">Присутність.</div>
+<div id="ui">
+  <div class="panel" id="panel">
+    <p class="system">SYSTEM STATUS: UNSTABLE</p>
+    <p>Система втратила центр.</p>
+    <p>Дані більше не сходяться в одній точці.</p>
+    <p>Розпад відбувається не зовні — всередині.</p>
+
+    <p class="system">RECOVERY REQUIRED</p>
+
+    <div class="options">
+      <div class="option foundation" onclick="selectPath('foundation')">
+        ФУНДАМЕНТ // СТІЙКІСТЬ
+      </div>
+      <div class="option arch" onclick="selectPath('arch')">
+        АРХІТЕКТОР // ЛОГІКА
+      </div>
+      <div class="option res" onclick="selectPath('res')">
+        РЕЗОНАНС // ЗВʼЯЗКИ
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="hold" id="hold">УТРИМУЙ</div>
-
 <script>
-/* ---------- БИНАРНЫЙ ФОН ---------- */
-const binary = document.getElementById('binary');
-let binText = '';
-for (let i = 0; i < 2000; i++) {
-    binText += Math.random() > 0.5 ? '1' : '0';
-    if (i % 60 === 0) binText += '\n';
+/* ===== MATRIX EFFECT ===== */
+const c = document.getElementById("matrix");
+const ctx = c.getContext("2d");
+let w,h;
+function resize(){
+  w=c.width=window.innerWidth;
+  h=c.height=window.innerHeight;
 }
-binary.textContent = binText;
+window.addEventListener("resize",resize);
+resize();
 
-/* ---------- ПОЯВЛЕНИЕ ТЕКСТА ---------- */
-const lines = document.querySelectorAll('.line');
-let index = 0;
+const cols = Math.floor(w/14);
+const drops = Array(cols).fill(0);
 
-function showNext() {
-    if (index < lines.length) {
-        lines[index].classList.add('show');
-        index++;
-        setTimeout(showNext, 1200);
-    } else {
-        document.getElementById('hold').classList.add('active');
-    }
+function drawMatrix(){
+  ctx.fillStyle="rgba(0,0,0,0.08)";
+  ctx.fillRect(0,0,w,h);
+  ctx.fillStyle="#00ff9c";
+  ctx.font="14px monospace";
+  for(let i=0;i<drops.length;i++){
+    const t = Math.random()>0.5?"1":"0";
+    ctx.fillText(t,i*14,drops[i]*14);
+    if(drops[i]*14>h||Math.random()>0.98) drops[i]=0;
+    drops[i]++;
+  }
 }
+setInterval(drawMatrix,50);
 
-setTimeout(showNext, 800);
+/* ===== STORY FLOW ===== */
+const panel=document.getElementById("panel");
 
-/* ---------- ФИЗИКА УДЕРЖАНИЯ ---------- */
-let holding = false;
-let fracture = 0;
-
-function startHold() {
-    holding = true;
-}
-
-function endHold() {
-    holding = false;
-}
-
-document.addEventListener('mousedown', startHold);
-document.addEventListener('touchstart', startHold, { passive: true });
-
-document.addEventListener('mouseup', endHold);
-document.addEventListener('touchend', endHold);
-
-function loop() {
-    if (!holding) {
-        fracture += 0.4;
-    } else {
-        fracture -= 0.6;
-    }
-
-    fracture = Math.max(0, Math.min(fracture, 40));
-
-    document.documentElement.style.setProperty(
-        '--fracture',
-        `${Math.sin(Date.now() * 0.01) * fracture}px`
-    );
-
-    requestAnimationFrame(loop);
+function selectPath(path){
+  panel.classList.add("fade-out");
+  setTimeout(()=>{
+    if(path==="foundation") loadFoundation();
+    else panel.innerHTML="<p class='system'>PATH LOCKED. NOT IMPLEMENTED.</p>";
+    panel.classList.remove("fade-out");
+  },900);
 }
 
-loop();
+/* ===== FOUNDATION ARC — CHAPTER 1 ===== */
+function loadFoundation(){
+  panel.innerHTML=`
+    <p class="system">PATH SELECTED: FOUNDATION</p>
+
+    <p>ГЛАВА I — ФУНДАМЕНТ</p>
+
+    <p>Ти не виправляєш світ.</p>
+    <p>Ти не переписуєш помилки.</p>
+
+    <p>Ти залишаєшся.</p>
+
+    <p>Кожен збій проходить крізь тебе.</p>
+    <p>Кожен розрахунок тримається на твоїй присутності.</p>
+
+    <p class="system">TASK:</p>
+    <p>Утримувати систему в моменті розпаду.</p>
+
+    <p class="command">[ ПРОДОВЖИТИ ]</p>
+  `;
+}
 </script>
 
 </body>
