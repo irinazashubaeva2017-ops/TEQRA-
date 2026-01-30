@@ -3,223 +3,171 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TEQRA // FRACTURE</title>
+<title>TEQRA | Фундамент</title>
 
 <style>
-:root{
-  --bg:#000;
-  --green:#00ff88;
-  --blue:#6ccfff;
-  --violet:#c58cff;
-  --panel:rgba(0,0,0,0.65);
-  --border:rgba(255,255,255,0.25);
+:root {
+    --bg: #050507;
+    --text: rgba(255,255,255,0.85);
+    --muted: rgba(255,255,255,0.45);
+    --accent: #ffb347;
+    --fracture: 0px;
 }
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family: monospace;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
 }
 
-body{
-  background:var(--bg);
-  color:white;
-  overflow:hidden;
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    height: 100vh;
+    overflow: hidden;
 }
 
-/* ===== MATRIX ===== */
-canvas{
-  position:fixed;
-  inset:0;
-  z-index:0;
+/* ДВОИЧНЫЙ ФОН */
+.binary {
+    position: fixed;
+    inset: 0;
+    font-family: monospace;
+    font-size: 14px;
+    color: rgba(255,255,255,0.05);
+    line-height: 1.2;
+    white-space: pre-wrap;
+    animation: drift 20s linear infinite;
 }
 
-/* ===== UI LAYER ===== */
-#ui{
-  position:relative;
-  z-index:5;
-  width:100%;
-  height:100%;
-  display:flex;
-  justify-content:center;
-  align-items:center;
+@keyframes drift {
+    from { transform: translateY(0); }
+    to { transform: translateY(-50%); }
 }
 
-#panel{
-  background:var(--panel);
-  border:1px solid var(--border);
-  padding:36px 28px;
-  width:90%;
-  max-width:520px;
-  text-align:center;
-  backdrop-filter: blur(6px);
+/* КОНТЕЙНЕР ТЕКСТА */
+.stage {
+    position: relative;
+    z-index: 2;
+    max-width: 700px;
+    margin: auto;
+    padding: 15vh 20px;
+    transform: translateX(var(--fracture));
+    transition: transform 0.3s ease;
 }
 
-/* ===== TEXT ===== */
-p{
-  letter-spacing:0.25em;
-  font-size:0.85rem;
-  margin:8px 0;
-  opacity:0.9;
+/* ТЕКСТ */
+.line {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    margin-bottom: 20px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 1s ease, transform 1s ease;
 }
 
-/* ===== CHOICES ===== */
-.choice{
-  margin-top:16px;
-  padding:14px;
-  border:1px solid var(--border);
-  cursor:pointer;
-  transition:transform .5s ease, opacity .3s;
-  position:relative;
+.line.show {
+    opacity: 1;
+    transform: translateY(0);
 }
 
-.choice:hover{
-  opacity:1;
+/* ИНСТРУКЦИЯ */
+.hold {
+    position: fixed;
+    bottom: 40px;
+    width: 100%;
+    text-align: center;
+    font-size: 0.9rem;
+    letter-spacing: 0.25em;
+    color: var(--muted);
+    opacity: 0;
+    transition: opacity 0.5s;
 }
 
-.foundation{color:#ffcc88}
-.architect{color:var(--blue)}
-.resonance{color:var(--violet)}
-
-.choice.selected{
-  transform:translateX(120vw);
-}
-
-/* ===== CHAPTER ===== */
-#chapter{
-  display:none;
-  background:var(--panel);
-  border:1px solid var(--border);
-  padding:40px;
-  width:90%;
-  max-width:620px;
-  backdrop-filter: blur(6px);
-}
-
-#chapter p{
-  letter-spacing:0.2em;
-  line-height:1.8;
-  font-size:0.9rem;
-}
-
-/* ===== FRACTURE ===== */
-.split-left{
-  animation:splitLeft 0.8s forwards;
-}
-.split-right{
-  animation:splitRight 0.8s forwards;
-}
-
-@keyframes splitLeft{
-  to{transform:translateX(-120vw); opacity:0}
-}
-@keyframes splitRight{
-  to{transform:translateX(120vw); opacity:0}
+.hold.active {
+    opacity: 1;
+    color: var(--accent);
 }
 </style>
 </head>
 
 <body>
 
-<canvas id="matrix"></canvas>
+<div class="binary" id="binary"></div>
 
-<div id="ui">
-  <div id="panel">
-    <p>СИСТЕМА ТРІЩИТЬ.</p>
-    <p>НЕ ЗОВНІ — ВСЕРЕДИНІ.</p>
-    <br>
-    <p>ФУНДАМЕНТ.</p>
-    <p>АРХІТЕКТУРА.</p>
-    <p>РЕЗОНАНС.</p>
-    <br>
-    <p>СИСТЕМА НЕ МОЖЕ УТРИМУВАТИ ВСЕ.</p>
-    <p>ОБЕРИ, ЩО ЗАЛИШИТИ.</p>
-
-    <div class="choice foundation" onclick="selectRole('foundation',this)">
-      ФУНДАМЕНТ // СТІЙКІСТЬ
-    </div>
-    <div class="choice architect" onclick="selectRole('architect',this)">
-      АРХІТЕКТОР // ЛОГІКА
-    </div>
-    <div class="choice resonance" onclick="selectRole('resonance',this)">
-      РЕЗОНАНС // ЗВʼЯЗКИ
-    </div>
-  </div>
+<div class="stage" id="stage">
+    <div class="line">Система втратила центр.</div>
+    <div class="line">Дані більше не сходяться в одній точці.</div>
+    <div class="line">Щоб світ не розпався, потрібна вага.</div>
+    <div class="line">Не рішення.</div>
+    <div class="line">Присутність.</div>
 </div>
 
-<div id="ui">
-  <div id="chapter"></div>
-</div>
+<div class="hold" id="hold">УТРИМУЙ</div>
 
 <script>
-/* MATRIX */
-const c=document.getElementById("matrix");
-const ctx=c.getContext("2d");
-let w,h;
-function resize(){w=c.width=innerWidth;h=c.height=innerHeight}
-addEventListener("resize",resize);resize();
-let cols=Math.floor(w/16);
-let drops=Array(cols).fill(0);
-
-function draw(){
-  ctx.fillStyle="rgba(0,0,0,0.08)";
-  ctx.fillRect(0,0,w,h);
-  ctx.fillStyle="#00ff88";
-  ctx.font="16px monospace";
-  drops.forEach((y,i)=>{
-    ctx.fillText(Math.random()>0.5?"1":"0",i*16,y*16);
-    drops[i]=y*16>h||Math.random()>0.98?0:y+1;
-  });
-  requestAnimationFrame(draw);
+/* ---------- БИНАРНЫЙ ФОН ---------- */
+const binary = document.getElementById('binary');
+let binText = '';
+for (let i = 0; i < 2000; i++) {
+    binText += Math.random() > 0.5 ? '1' : '0';
+    if (i % 60 === 0) binText += '\n';
 }
-draw();
+binary.textContent = binText;
 
-/* STORY */
-function selectRole(role,el){
-  document.querySelectorAll(".choice").forEach(c=>{
-    if(c!==el){
-      c.classList.add(c===el.previousElementSibling?"split-left":"split-right");
+/* ---------- ПОЯВЛЕНИЕ ТЕКСТА ---------- */
+const lines = document.querySelectorAll('.line');
+let index = 0;
+
+function showNext() {
+    if (index < lines.length) {
+        lines[index].classList.add('show');
+        index++;
+        setTimeout(showNext, 1200);
+    } else {
+        document.getElementById('hold').classList.add('active');
     }
-  });
-  el.classList.add("selected");
-
-  setTimeout(()=>showChapter(role),700);
 }
 
-function showChapter(role){
-  document.getElementById("panel").style.display="none";
-  const ch=document.getElementById("chapter");
-  ch.style.display="block";
+setTimeout(showNext, 800);
 
-  let text={
-    foundation:`ГЛАВА I — ФУНДАМЕНТ
+/* ---------- ФИЗИКА УДЕРЖАНИЯ ---------- */
+let holding = false;
+let fracture = 0;
 
-ТИ НЕ ВИПРАВЛЯЄШ СВІТ.
-ТИ ЙОГО УТРИМУЄШ.
-
-КОЖЕН ЗБІЙ ПРИХОВАНИЙ.
-СТІЙКІСТЬ МАЄ ЦІНУ.`,
-
-    architect:`ГЛАВА I — АРХІТЕКТОР
-
-ТИ БАЧИШ СТРУКТУРУ
-ТАМ, ДЕ ІНШІ БАЧАТЬ ХАОС.
-
-СИСТЕМА НЕ ЗЛАМАНА.
-ВОНА ПОГАНО СПРОЕКТОВАНА.`,
-
-    resonance:`ГЛАВА I — РЕЗОНАНС
-
-СИСТЕМА ВІДЧУВАЄ.
-ЗВʼЯЗКИ НЕ СХВАЛЕНІ.
-
-ТИ НЕ КОНТРОЛЮЄШ.
-ТИ СЛУХАЄШ.`
-  }[role];
-
-  ch.innerHTML=text.split("\n").map(l=>`<p>${l}</p>`).join("");
+function startHold() {
+    holding = true;
 }
+
+function endHold() {
+    holding = false;
+}
+
+document.addEventListener('mousedown', startHold);
+document.addEventListener('touchstart', startHold, { passive: true });
+
+document.addEventListener('mouseup', endHold);
+document.addEventListener('touchend', endHold);
+
+function loop() {
+    if (!holding) {
+        fracture += 0.4;
+    } else {
+        fracture -= 0.6;
+    }
+
+    fracture = Math.max(0, Math.min(fracture, 40));
+
+    document.documentElement.style.setProperty(
+        '--fracture',
+        `${Math.sin(Date.now() * 0.01) * fracture}px`
+    );
+
+    requestAnimationFrame(loop);
+}
+
+loop();
 </script>
 
 </body>
