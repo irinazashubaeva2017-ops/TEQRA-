@@ -3,95 +3,119 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TEQRA :: SYSTEM FRACTURE</title>
+<title>TEQRA | ФУНДАМЕНТ</title>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{
-    background:#050507;
-    color:#d8d8dc;
+    background:#070709;
+    color:#e0e0e5;
     font-family: monospace;
     overflow:hidden;
 }
 
-/* ===== BACKGROUND BINARY ===== */
+/* ===== БІНАРНИЙ ШУМ ===== */
 #binary{
     position:fixed;
     inset:0;
     pointer-events:none;
-    font-size:14px;
-    line-height:18px;
-    opacity:.15;
+    font-size:13px;
+    line-height:16px;
+    opacity:.12;
     white-space:pre;
-    animation:flicker 4s infinite;
-}
-@keyframes flicker{
-    0%,100%{opacity:.12}
-    50%{opacity:.2}
 }
 
-/* ===== MAIN PANEL ===== */
-#panel{
+/* ===== ОСНОВНИЙ БЛОК ===== */
+#ui{
     position:relative;
-    max-width:900px;
-    margin:8vh auto;
+    max-width:800px;
+    margin:7vh auto;
     padding:40px;
-    background:rgba(10,10,15,.7);
-    border:1px solid rgba(255,255,255,.1);
+    background:rgba(10,10,15,.75);
+    border:1px solid rgba(255,255,255,.15);
     backdrop-filter:blur(6px);
+    z-index:10;
 }
 
-/* ===== TEXT ===== */
 .system{
     font-size:13px;
-    letter-spacing:.2em;
+    letter-spacing:.25em;
     opacity:.6;
     margin-bottom:20px;
 }
+
 .text{
     font-size:18px;
     line-height:1.6;
     margin-bottom:20px;
 }
 
-/* ===== BUTTONS ===== */
+/* ===== ВИБІР ===== */
 .choice{
     border:1px solid rgba(255,255,255,.3);
     padding:14px;
-    margin-top:15px;
+    margin-top:12px;
     cursor:pointer;
-    transition:.3s;
+    transition:.25s;
 }
-.choice:hover{
-    background:rgba(255,255,255,.08);
-}
+.choice:hover{background:rgba(255,255,255,.08)}
 .choice.active{
+    background:rgba(255,255,255,.18);
     border-color:#fff;
-    background:rgba(255,255,255,.15);
 }
 
-/* ===== PROGRESS ===== */
-#stability{
+/* ===== КНОПКА УТРИМАННЯ ===== */
+#holdBtn{
+    width:160px;
+    height:160px;
+    border-radius:50%;
+    border:2px solid #9affc9;
+    margin:30px auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:14px;
+    letter-spacing:.2em;
+    color:#9affc9;
+    user-select:none;
+}
+
+/* ===== ПРОГРЕС ===== */
+#bar{
     height:6px;
     background:rgba(255,255,255,.1);
-    margin-top:30px;
 }
-#stabilityFill{
+#fill{
     height:100%;
-    width:20%;
+    width:30%;
     background:#9affc9;
-    transition:.2s;
+    transition:.15s;
 }
 
-/* ===== GLITCH ===== */
+/* ===== РОЗЛОМИ ===== */
+.crack{
+    position:absolute;
+    border:1px solid rgba(255,80,80,.9);
+    padding:6px 10px;
+    font-size:12px;
+    color:#ff6b6b;
+    cursor:pointer;
+    animation:flash .8s infinite alternate;
+}
+@keyframes flash{
+    from{opacity:.4}
+    to{opacity:1}
+}
+
+/* ===== ГЛІТЧ ===== */
 .glitch{
     animation:glitch .15s infinite;
 }
 @keyframes glitch{
     0%{transform:translate(0)}
-    25%{transform:translate(-2px,2px)}
+    25%{transform:translate(-2px,1px)}
     50%{transform:translate(2px,-1px)}
-    75%{transform:translate(-1px,1px)}
+    75%{transform:translate(-1px,2px)}
     100%{transform:translate(0)}
 }
 </style>
@@ -101,120 +125,129 @@ body{
 
 <div id="binary"></div>
 
-<div id="panel">
-    <div class="system" id="systemLine">SYSTEM BOOT SEQUENCE</div>
-    <div class="text" id="content"></div>
+<div id="ui">
+    <div class="system" id="sys">ІНІЦІАЛІЗАЦІЯ СИСТЕМИ</div>
+    <div class="text" id="text"></div>
     <div id="choices"></div>
-    <div id="stability" style="display:none">
-        <div id="stabilityFill"></div>
+
+    <div id="holdBtn" style="display:none">УТРИМУВАТИ</div>
+
+    <div id="bar" style="display:none">
+        <div id="fill"></div>
     </div>
 </div>
 
 <script>
-/* ===== BINARY BACKGROUND ===== */
+/* ===== БІНАРНИЙ ФОН ===== */
 const binary=document.getElementById("binary");
 setInterval(()=>{
     let out="";
-    for(let i=0;i<800;i++){
+    for(let i=0;i<900;i++){
         out+=Math.random()>0.5?"1":"0";
-        if(i%60===0)out+="\n";
+        if(i%70===0)out+="\n";
     }
     binary.textContent=out;
-},300);
+},250);
 
-/* ===== SCENE SYSTEM ===== */
-const content=document.getElementById("content");
+/* ===== СЦЕНИ ===== */
+const text=document.getElementById("text");
 const choices=document.getElementById("choices");
-const systemLine=document.getElementById("systemLine");
-const stability=document.getElementById("stability");
-const stabilityFill=document.getElementById("stabilityFill");
+const sys=document.getElementById("sys");
+const holdBtn=document.getElementById("holdBtn");
+const bar=document.getElementById("bar");
+const fill=document.getElementById("fill");
 
 let scene="prologue";
-let hold=false;
-let value=20;
+let holding=false;
+let stability=30;
 
-/* ===== PROLOGUE ===== */
-content.innerHTML=
-"System integrity compromised.<br><br>" +
-"Core logic fractured.<br>" +
-"Temporal alignment: FAILED.<br><br>" +
-"You are connected to the last stable layer.";
+/* ===== ПРОЛОГ ===== */
+text.innerHTML=
+"Ядро нестабільне.<br><br>"+
+"Система більше не тримає форму.<br>"+
+"Потрібна точка опори.";
 
 choices.innerHTML=
-"<div class='choice' onclick='selectPath(\"foundation\")'>FOUNDATION — hold structure</div>"+
-"<div class='choice' onclick='selectPath(\"architect\")'>ARCHITECT — rewrite logic</div>"+
-"<div class='choice' onclick='selectPath(\"resonance\")'>RESONANCE — synchronize flow</div>";
+"<div class='choice' onclick='select(\"foundation\")'>ФУНДАМЕНТ — утримувати рівновагу</div>"+
+"<div class='choice'>АРХІТЕКТОР — (пізніше)</div>"+
+"<div class='choice'>РЕЗОНАНС — (пізніше)</div>";
 
-/* ===== PATH SELECT ===== */
-function selectPath(p){
+function select(path){
     document.querySelectorAll('.choice').forEach(c=>c.classList.remove('active'));
     event.target.classList.add('active');
 
     setTimeout(()=>{
-        teleport(p);
-    },800);
+        startFoundation();
+    },700);
 }
 
-/* ===== TELEPORT ===== */
-function teleport(p){
-    document.body.classList.add("glitch");
-    setTimeout(()=>{
-        document.body.classList.remove("glitch");
-        if(p==="foundation")startFoundation();
-        else{
-            content.innerHTML="PATH LOCKED.<br>Not implemented yet.";
-            choices.innerHTML="";
-        }
-    },1000);
-}
-
-/* ===== FOUNDATION ARC ===== */
+/* ===== ФУНДАМЕНТ ===== */
 function startFoundation(){
     scene="foundation";
-    systemLine.textContent="FOUNDATION PROTOCOL";
-    content.innerHTML=
-    "Reality weight detected.<br><br>"+
-    "Your task is not action.<br>"+
-    "Your task is endurance.<br><br>"+
-    "Hold the system together.";
+    sys.textContent="ПРОТОКОЛ ФУНДАМЕНТУ";
+    text.innerHTML=
+    "Стабільність не відновлюється дією.<br>"+
+    "Вона утримується зусиллям.<br><br>"+
+    "Тримай центр. Закривай розломи.";
 
-    choices.innerHTML="<div class='choice'>PRESS AND HOLD TO STABILIZE</div>";
-    stability.style.display="block";
+    choices.innerHTML="";
+    holdBtn.style.display="flex";
+    bar.style.display="block";
 
-    document.addEventListener("mousedown",()=>hold=true);
-    document.addEventListener("mouseup",()=>hold=false);
-    document.addEventListener("touchstart",()=>hold=true);
-    document.addEventListener("touchend",()=>hold=false);
+    holdBtn.addEventListener("mousedown",()=>holding=true);
+    holdBtn.addEventListener("mouseup",()=>holding=false);
+    holdBtn.addEventListener("touchstart",()=>holding=true);
+    holdBtn.addEventListener("touchend",()=>holding=false);
 
-    loop();
+    setInterval(spawnCrack,2000);
+    requestAnimationFrame(loop);
 }
 
-/* ===== FOUNDATION LOOP ===== */
+/* ===== РОЗЛОМИ ===== */
+function spawnCrack(){
+    if(scene!=="foundation")return;
+
+    const c=document.createElement("div");
+    c.className="crack";
+    c.style.left=Math.random()*80+"%";
+    c.style.top=Math.random()*80+"%";
+    c.innerText="РОЗЛОМ";
+
+    c.onclick=()=>{
+        stability+=8;
+        c.remove();
+    };
+
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),3000);
+}
+
+/* ===== ЦИКЛ ===== */
 function loop(){
     if(scene!=="foundation")return;
 
-    if(hold){
-        value+=0.6;
+    if(holding){
+        stability+=0.4;
         document.body.classList.remove("glitch");
     }else{
-        value-=0.8;
+        stability-=0.6;
         document.body.classList.add("glitch");
     }
 
-    value=Math.max(0,Math.min(100,value));
-    stabilityFill.style.width=value+"%";
+    stability=Math.max(0,Math.min(100,stability));
+    fill.style.width=stability+"%";
 
-    if(value<=0){
-        content.innerHTML="SYSTEM COLLAPSE.<br>You released the weight.";
+    if(stability<=0){
+        text.innerHTML="СИСТЕМА ЗРУЙНОВАНА.<br>Фундамент втрачено.";
         return;
     }
 
-    if(value>=100){
-        content.innerHTML=
-        "Stability achieved.<br><br>"+
-        "You did not fight.<br>"+
-        "You endured.";
+    if(stability>=100){
         document.body.classList.remove("glitch");
+        text.innerHTML=
+        "Стабільність відновлено.<br><br>"+
+        "Ти витримала тиск.<br>"+
+        "Фундамент прийняв тебе.";
         return;
     }
 
