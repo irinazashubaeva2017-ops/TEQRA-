@@ -1,155 +1,235 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TEQRA — Пролог</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEQRA | Пролог</title>
+    <style>
+        /* ОСНОВНІ НАЛАШТУВАННЯ */
+        :root {
+            --bg-color: #050507;
+            --accent-color: #4facfe;
+            --text-color: #e0e0e0;
+            --dim-text: #888;
+            --transition: 1.5s ease-in-out;
+        }
 
-<style>
-:root {
-  --bg: #05070d;
-  --accent: #6fd2ff;
-  --text: #e6f0f6;
-  --dim: rgba(255,255,255,0.5);
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden; /* Заборона скролу для атмосфери */
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-body {
-  height: 100vh;
-  background: radial-gradient(circle at center, #0b1324, var(--bg));
-  color: var(--text);
-  font-family: system-ui, -apple-system, sans-serif;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
+        /* ФОНОВІ ЕФЕКТИ */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #050507 100%);
+            z-index: -1;
+        }
 
-.screen {
-  position: absolute;
-  inset: 0;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  text-align: center;
-}
+        .glow {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: var(--accent-color);
+            filter: blur(150px);
+            opacity: 0.15;
+            border-radius: 50%;
+            animation: pulseGlow 8s infinite alternate;
+        }
 
-.screen.active { display: flex; }
+        @keyframes pulseGlow {
+            0% { transform: scale(1); opacity: 0.1; }
+            100% { transform: scale(1.5); opacity: 0.2; }
+        }
 
-h1 {
-  font-size: 28px;
-  letter-spacing: 0.15em;
-  margin-bottom: 12px;
-}
+        /* КОНТЕЙНЕР ЕКРАНІВ */
+        .stage {
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: var(--transition);
+            pointer-events: none;
+            position: absolute;
+        }
 
-p {
-  font-size: 16px;
-  line-height: 1.6;
-  color: var(--dim);
-  max-width: 520px;
-}
+        .stage.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
 
-button {
-  margin-top: 32px;
-  padding: 14px 28px;
-  border-radius: 999px;
-  border: 1px solid var(--accent);
-  background: transparent;
-  color: var(--accent);
-  font-size: 14px;
-  letter-spacing: 0.15em;
-  cursor: pointer;
-}
+        /* ТЕКСТОВІ СТИЛІ */
+        h1 {
+            font-weight: 200;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            color: #fff;
+        }
 
-button:active {
-  transform: scale(0.96);
-}
+        p {
+            line-height: 1.8;
+            font-size: 1.1rem;
+            color: var(--dim-text);
+        }
 
-/* particles */
-.star {
-  position: absolute;
-  width: 2px;
-  height: 2px;
-  background: white;
-  opacity: 0.4;
-  border-radius: 50%;
-  animation: float linear infinite;
-}
+        .highlight {
+            color: var(--accent-color);
+            text-shadow: 0 0 10px var(--accent-color);
+        }
 
-@keyframes float {
-  from { transform: translateY(100vh); }
-  to { transform: translateY(-10vh); }
-}
-</style>
+        /* ЯДРО */
+        .core-container {
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .core {
+            width: 80px;
+            height: 80px;
+            background: transparent;
+            border: 2px solid var(--accent-color);
+            border-radius: 50%;
+            box-shadow: 0 0 30px var(--accent-color), inset 0 0 20px var(--accent-color);
+            animation: coreRotate 10s infinite linear;
+            position: relative;
+        }
+
+        .core::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 40%; height: 40%;
+            background: white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 20px #fff;
+        }
+
+        @keyframes coreRotate {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        /* КНОПКА */
+        .btn {
+            margin-top: 40px;
+            padding: 15px 40px;
+            background: transparent;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            background: var(--accent-color);
+            color: #000;
+            box-shadow: 0 0 30px var(--accent-color);
+        }
+
+        /* АДАПТИВНІСТЬ */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.5rem; }
+            p { font-size: 0.95rem; }
+        }
+    </style>
 </head>
-
 <body>
 
-<!-- INTRO -->
-<div class="screen active" id="intro">
-  <h1>TEQRA</h1>
-  <p>
-    Коли світ втратив рівновагу…<br><br>
-    ядро планети перестало бути стабільним.<br>
-    Час спотворився. День і ніч зламали ритм.<br><br>
-    Але світ ще не впав.
-  </p>
-  <button onclick="start()">УВІЙТИ</button>
-</div>
+    <div class="stars"></div>
+    <div class="glow"></div>
 
-<!-- ROLE -->
-<div class="screen" id="role">
-  <h1>ВИБІР</h1>
-  <p>Ким ти повернувся у цей світ?</p>
-  <button onclick="choose('Фундамент')">ФУНДАМЕНТ</button>
-  <button onclick="choose('Архітектор')">АРХІТЕКТОР</button>
-  <button onclick="choose('Резонатор')">РЕЗОНАТОР</button>
-</div>
+    <div id="stage1" class="stage active">
+        <h1 class="highlight">TEQRA</h1>
+        <p>У порожнечі немає болю.</p>
+        <p>Тільки тиша... і відлуння системи.</p>
+    </div>
 
-<!-- END -->
-<div class="screen" id="end">
-  <h1>ПРОЛОГ ЗАВЕРШЕНО</h1>
-  <p id="result"></p>
-</div>
+    <div id="stage2" class="stage">
+        <div class="core-container">
+            <div class="core"></div>
+        </div>
+        <p>Ядро Землі розколоте людською жадобою.<br>
+           Доба триває лише <span class="highlight">5 годин</span>.<br>
+           Світ балансує на межі остаточного збою.
+        </p>
+    </div>
 
-<script>
-/* stars */
-for(let i=0;i<40;i++){
-  const s=document.createElement('div');
-  s.className='star';
-  s.style.left=Math.random()*100+'%';
-  s.style.animationDuration=(10+Math.random()*20)+'s';
-  document.body.appendChild(s);
-}
+    <div id="stage3" class="stage">
+        <h1>Ти — Хранитель</h1>
+        <p>Твій прихід був розрахований алгоритмами майбутнього.<br>
+           Відновлення, Логіка або Фундамент — твій шлях визначить долю реальності.
+        </p>
+        <button class="btn" onclick="nextStage()">Почати шлях</button>
+    </div>
 
-/* voice */
-function speak(text){
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'uk-UA';
-  u.rate = 0.9;
-  u.pitch = 0.9;
-  speechSynthesis.speak(u);
-}
+    <script>
+        let currentStage = 1;
+        const totalStages = 3;
 
-function start(){
-  speak("Коли світ втратив рівновагу. Ти повернувся, щоб утримати його.");
-  document.getElementById('intro').classList.remove('active');
-  document.getElementById('role').classList.add('active');
-}
+        // Автоматичний перехід між першими двома екранами для кінематографічності
+        setTimeout(() => {
+            if(currentStage === 1) nextStage();
+        }, 4000);
 
-function choose(role){
-  localStorage.setItem('teqra_role', role);
-  document.getElementById('role').classList.remove('active');
-  document.getElementById('end').classList.add('active');
-  document.getElementById('result').innerText =
-    "Ти обрав шлях: " + role +
-    ". Світ запам’ятає цей вибір.";
-  speak("Ти обрав шлях " + role + ". Світ запам’ятає цей вибір.");
-}
-</script>
+        setTimeout(() => {
+            if(currentStage === 2) nextStage();
+        }, 9000);
 
+        function nextStage() {
+            if (currentStage < totalStages) {
+                // Ховаємо поточний екран
+                document.getElementById(`stage${currentStage}`).classList.remove('active');
+                
+                currentStage++;
+                
+                // Показуємо наступний з невеликою затримкою для плавності
+                setTimeout(() => {
+                    document.getElementById(`stage${currentStage}`).classList.add('active');
+                }, 100);
+            } else {
+                // Дія при натисканні фінальної кнопки
+                const btn = document.querySelector('.btn');
+                btn.innerText = "Синхронізація...";
+                btn.style.opacity = "0.5";
+                setTimeout(() => {
+                    alert("Пролог завершено. Ласкаво просимо у TEQRA.");
+                }, 1000);
+            }
+        }
+
+        // Легкий паралакс ефект для фону
+        document.addEventListener('mousemove', (e) => {
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+            document.querySelector('.glow').style.transform = 
+                `translate(${x * 50}px, ${y * 50}px)`;
+        });
+    </script>
 </body>
 </html>
