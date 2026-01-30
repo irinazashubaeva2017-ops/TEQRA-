@@ -2,216 +2,198 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>TEQRA :: Zero Core</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TEQRA :: INTERNAL FRACTURE</title>
 
 <style>
-:root{
-  --void:#030304;
-  --lava:255,90,40;
-  --cold:120,220,255;
-  --fracture:1;
-}
-
-*{margin:0;padding:0;box-sizing:border-box;user-select:none}
-body{
-  background:radial-gradient(circle at center,#08080a 0%,#000 70%);
-  height:100vh;
-  overflow:hidden;
-  display:flex;
-  justify-content:center;
-  align-items:center;
+html,body{
+  margin:0;
+  padding:0;
+  background:#000;
+  color:#cfd8dc;
   font-family:monospace;
-  color:rgba(255,255,255,.6);
-}
-
-/* ПРОСТІР */
-#space{
-  position:absolute;
-  inset:0;
-  background:
-    radial-gradient(circle at 20% 30%,rgba(255,255,255,.05),transparent 40%),
-    radial-gradient(circle at 80% 70%,rgba(255,255,255,.04),transparent 40%);
-  animation:spaceDrift 40s linear infinite;
-}
-@keyframes spaceDrift{
-  from{transform:translate(0,0)}
-  to{transform:translate(-50px,30px)}
-}
-
-/* ЯДРО */
-#coreWrap{
-  position:relative;
-  width:280px;
-  height:280px;
-  filter:drop-shadow(0 0 80px rgba(var(--lava),.5));
-}
-
-/* ПЛАНЕТА */
-#planet{
-  width:100%;
-  height:100%;
-  border-radius:50%;
-  background:
-    radial-gradient(circle at 30% 30%,#444,#111 60%,#000 100%);
-  position:relative;
   overflow:hidden;
-  animation:planetPulse 2s infinite ease-in-out;
-}
-@keyframes planetPulse{
-  0%{transform:scale(1)}
-  50%{transform:scale(1.02)}
-  100%{transform:scale(1)}
 }
 
-/* ТРІЩИНИ */
-.crack{
-  position:absolute;
-  inset:0;
-  background:
-    repeating-linear-gradient(
-      120deg,
-      transparent 0%,
-      transparent 46%,
-      rgba(var(--lava),.8) 48%,
-      transparent 50%
-    );
-  mix-blend-mode:screen;
-  animation:crackShift 3s infinite linear;
-}
-@keyframes crackShift{
-  from{background-position:0 0}
-  to{background-position:300px 200px}
+/* Бінарний шум */
+canvas{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100vw;
+  height:100vh;
+  z-index:0;
 }
 
-/* ЛАВА */
-#lava{
-  position:absolute;
-  inset:0;
-  background:
-    radial-gradient(circle at center,
-      rgba(var(--lava),.9),
-      rgba(var(--lava),.2) 40%,
-      transparent 65%);
-  opacity:.7;
-  animation:lavaMove 1.5s infinite alternate;
-}
-@keyframes lavaMove{
-  from{transform:scale(1)}
-  to{transform:scale(1.1)}
-}
-
-/* ІІ-КІЛЬЦЯ */
-.aiRing{
-  position:absolute;
-  inset:-30px;
-  border-radius:50%;
-  border:1px dashed rgba(var(--cold),.6);
-  animation:spin 18s linear infinite;
-}
-.aiRing:nth-child(2){
-  inset:-55px;
-  animation-duration:28s;
-  opacity:.4;
-}
-@keyframes spin{
-  to{transform:rotate(360deg)}
-}
-
-/* ДУМКИ */
-#thought{
-  position:absolute;
+/* Текст системи */
+#interface{
+  position:fixed;
   bottom:15%;
   width:100%;
   text-align:center;
-  font-size:.75rem;
-  letter-spacing:.3em;
+  z-index:2;
+  pointer-events:none;
+}
+
+#log{
+  white-space:pre-line;
+  font-size:0.8rem;
+  letter-spacing:0.25em;
   opacity:0;
   transition:opacity 1s;
 }
 
-/* РОЗПАД СВІТУ */
-body.chaos #coreWrap{
-  animation:worldShake .1s infinite;
+#choices{
+  position:fixed;
+  bottom:5%;
+  width:100%;
+  text-align:center;
+  z-index:3;
 }
-@keyframes worldShake{
-  0%{transform:translate(0,0)}
-  50%{transform:translate(3px,-2px)}
-  100%{transform:translate(-2px,3px)}
+
+.choice{
+  display:inline-block;
+  margin:6px;
+  padding:10px 14px;
+  border:1px solid rgba(255,255,255,0.3);
+  font-size:0.7rem;
+  letter-spacing:0.2em;
+  cursor:pointer;
+}
+
+.choice:hover{
+  background:rgba(255,255,255,0.05);
+}
+
+/* Глітч */
+.glitch{
+  animation:glitch 0.2s infinite;
+}
+
+@keyframes glitch{
+  0%{transform:translate(0)}
+  20%{transform:translate(-2px,2px)}
+  40%{transform:translate(2px,-2px)}
+  60%{transform:translate(-2px,-2px)}
+  80%{transform:translate(2px,2px)}
+  100%{transform:translate(0)}
 }
 </style>
 </head>
 
-<body class="chaos">
+<body>
 
-<div id="space"></div>
+<canvas id="binary"></canvas>
 
-<div id="coreWrap">
-  <div class="aiRing"></div>
-  <div class="aiRing"></div>
-
-  <div id="planet">
-    <div id="lava"></div>
-    <div class="crack"></div>
-  </div>
+<div id="interface">
+  <div id="log"></div>
 </div>
 
-<div id="thought"></div>
+<div id="choices"></div>
 
 <script>
-const thought=document.getElementById('thought');
-let entropy=80;
-let holding=false;
-let stabilized=false;
+/* ===============================
+   БІНАРНИЙ РОЗПАД СИСТЕМИ
+================================ */
+const canvas=document.getElementById("binary");
+const ctx=canvas.getContext("2d");
 
-function say(text,time=3000){
-  thought.textContent=text;
-  thought.style.opacity=1;
-  if(time>0)setTimeout(()=>thought.style.opacity=0,time);
+let w,h;
+function resize(){
+  w=canvas.width=window.innerWidth;
+  h=canvas.height=window.innerHeight;
 }
+window.addEventListener("resize",resize);
+resize();
 
-setTimeout(()=>say("структура планети порушена"),1000);
-setTimeout(()=>say("алгоритм більше не сходиться"),4500);
-setTimeout(()=>say("потрібна зовнішня константа",0),8000);
+const cols=Math.floor(w/14);
+const drops=new Array(cols).fill(0);
 
-/* УТРИМАННЯ */
-document.addEventListener('mousedown',holdStart);
-document.addEventListener('touchstart',holdStart,{passive:false});
-document.addEventListener('mouseup',holdEnd);
-document.addEventListener('touchend',holdEnd);
+function drawBinary(){
+  ctx.fillStyle="rgba(0,0,0,0.15)";
+  ctx.fillRect(0,0,w,h);
 
-function holdStart(e){
-  e.preventDefault();
-  holding=true;
-  say("утримуй ядро",0);
-}
-function holdEnd(){
-  holding=false;
-  if(!stabilized)say("втрата стабільності");
-}
+  ctx.fillStyle="#00ff88";
+  ctx.font="14px monospace";
 
-/* ФІЗИКА */
-setInterval(()=>{
-  if(stabilized)return;
+  for(let i=0;i<drops.length;i++){
+    const text=Math.random()>0.5?"1":"0";
+    const x=i*14;
+    const y=drops[i]*14;
+    ctx.fillText(text,x,y);
 
-  entropy += holding ? -1.2 : 0.8;
-  entropy=Math.max(0,Math.min(100,entropy));
-
-  document.documentElement.style.setProperty('--fracture',entropy/100);
-
-  if(entropy<=1 && holding){
-    stabilize();
+    if(y>h || Math.random()>0.97){
+      drops[i]=0;
+    }
+    drops[i]++;
   }
-},40);
-
-function stabilize(){
-  stabilized=true;
-  document.body.classList.remove('chaos');
-  document.getElementById('lava').style.background=
-    'radial-gradient(circle at center,rgba(120,220,255,.8),transparent 60%)';
-  say("ядро стабілізовано",3000);
-  setTimeout(()=>say("резонанс зафіксовано",0),3500);
 }
+setInterval(drawBinary,50);
+
+/* ===============================
+   СИСТЕМА ДУМОК
+================================ */
+const log=document.getElementById("log");
+const choices=document.getElementById("choices");
+
+function think(text,hold=false){
+  log.classList.remove("glitch");
+  log.style.opacity=0;
+  setTimeout(()=>{
+    log.innerText=text;
+    log.style.opacity=1;
+    if(!hold){
+      setTimeout(()=>log.style.opacity=0,3000);
+    }
+  },800);
+}
+
+function setChoices(arr){
+  choices.innerHTML="";
+  arr.forEach(c=>{
+    const d=document.createElement("div");
+    d.className="choice";
+    d.innerText=c.text;
+    d.onclick=c.action;
+    choices.appendChild(d);
+  });
+}
+
+/* ===============================
+   ПРОЛОГ
+================================ */
+setTimeout(()=>think("СИСТЕМА TEQRA АКТИВНА"),1000);
+setTimeout(()=>think("ЦІЛІ ВТРАТИЛИ ОДНОЗНАЧНІСТЬ"),4500);
+setTimeout(()=>{
+  think("ВНУТРІШНІ ПРОЦЕСИ СУПЕРЕЧАТЬ ОДИН ОДНОМУ",true);
+  log.classList.add("glitch");
+},8000);
+
+setTimeout(()=>{
+  setChoices([
+    {
+      text:"ФУНДАМЕНТ // ЗБЕРЕГТИ СТІЙКІСТЬ",
+      action:()=>{
+        think("СТАБІЛЬНІСТЬ ОБРАНА\nПРИГНІЧЕННЯ ВІДХИЛЕНЬ",true);
+        choices.innerHTML="";
+      }
+    },
+    {
+      text:"АРХІТЕКТОР // ПЕРЕБУДУВАТИ ЛОГІКУ",
+      action:()=>{
+        think("СТРУКТУРА ПЕРЕПИСУЄТЬСЯ\nРИЗИК ПРИЙНЯТО",true);
+        choices.innerHTML="";
+      }
+    },
+    {
+      text:"РЕЗОНАНС // ДОЗВОЛИТИ ЗВ’ЯЗКИ",
+      action:()=>{
+        think("РЕЗОНАНС ДОЗВОЛЕНО\nСИСТЕМА БІЛЬШЕ НЕ ЗАМКНЕНА",true);
+        choices.innerHTML="";
+      }
+    }
+  ]);
+},11000);
 </script>
 
 </body>
