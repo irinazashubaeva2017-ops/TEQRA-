@@ -2,298 +2,223 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>TEQRA</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TEQRA :: SYSTEM FRACTURE</title>
 
 <style>
-/* ===== GLOBAL LOCK ===== */
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  user-select:none;
-  -webkit-user-select:none;
-  -webkit-touch-callout:none;
-}
-html,body{
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background:#000;
-  color:#eaeaea;
-  font-family:"Courier New", monospace;
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+    background:#050507;
+    color:#d8d8dc;
+    font-family: monospace;
+    overflow:hidden;
 }
 
-/* ===== COLORS ===== */
-:root{
-  --green:#00ff9c;
-  --gold:#ffb86b;
-  --blue:#66d9ff;
-  --violet:#c792ea;
-  --red:#ff4d4d;
+/* ===== BACKGROUND BINARY ===== */
+#binary{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    font-size:14px;
+    line-height:18px;
+    opacity:.15;
+    white-space:pre;
+    animation:flicker 4s infinite;
+}
+@keyframes flicker{
+    0%,100%{opacity:.12}
+    50%{opacity:.2}
 }
 
-/* ===== MATRIX ===== */
-canvas{
-  position:fixed;
-  inset:0;
-  z-index:1;
-}
-
-/* ===== SCREENS ===== */
-.screen{
-  position:fixed;
-  inset:0;
-  z-index:3;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  opacity:0;
-  pointer-events:none;
-  transition:opacity 1.2s;
-}
-.screen.active{
-  opacity:1;
-  pointer-events:auto;
+/* ===== MAIN PANEL ===== */
+#panel{
+    position:relative;
+    max-width:900px;
+    margin:8vh auto;
+    padding:40px;
+    background:rgba(10,10,15,.7);
+    border:1px solid rgba(255,255,255,.1);
+    backdrop-filter:blur(6px);
 }
 
 /* ===== TEXT ===== */
-.panel{
-  max-width:760px;
-  padding:24px;
-  text-align:center;
+.system{
+    font-size:13px;
+    letter-spacing:.2em;
+    opacity:.6;
+    margin-bottom:20px;
 }
-.line{
-  margin:14px 0;
-  font-size:18px;
-  opacity:0;
-  transform:translateY(10px);
-  transition:.8s;
-}
-.line.show{
-  opacity:1;
-  transform:none;
-}
-.glitch{
-  animation:glitch 1.4s infinite;
-}
-@keyframes glitch{
-  0%{text-shadow:none}
-  30%{text-shadow:-2px 0 red,2px 0 cyan}
-  60%{text-shadow:2px 0 red,-2px 0 cyan}
-  100%{text-shadow:none}
+.text{
+    font-size:18px;
+    line-height:1.6;
+    margin-bottom:20px;
 }
 
 /* ===== BUTTONS ===== */
 .choice{
-  border:2px solid;
-  padding:18px;
-  margin:16px 0;
-  cursor:pointer;
-  transition:.3s;
+    border:1px solid rgba(255,255,255,.3);
+    padding:14px;
+    margin-top:15px;
+    cursor:pointer;
+    transition:.3s;
 }
 .choice:hover{
-  background:rgba(255,255,255,.05);
+    background:rgba(255,255,255,.08);
+}
+.choice.active{
+    border-color:#fff;
+    background:rgba(255,255,255,.15);
 }
 
-/* ===== FOUNDATION UI ===== */
-#hold{
-  margin-top:30px;
-  padding:22px;
-  border:2px solid var(--gold);
-  color:var(--gold);
-  letter-spacing:5px;
-  font-size:22px;
+/* ===== PROGRESS ===== */
+#stability{
+    height:6px;
+    background:rgba(255,255,255,.1);
+    margin-top:30px;
 }
-#hold.active{background:rgba(255,184,107,.15)}
-#entropy{color:var(--red)}
-
-/* ===== FRACTURES ===== */
-.fracture{
-  position:fixed;
-  width:80px;
-  height:80px;
-  border:2px solid var(--red);
-  box-shadow:0 0 20px var(--red);
-  animation:fracturePulse 1.1s infinite;
-  z-index:5;
-}
-@keyframes fracturePulse{
-  0%{transform:scale(.9);opacity:.6}
-  50%{transform:scale(1.1);opacity:1}
-  100%{transform:scale(.9);opacity:.6}
+#stabilityFill{
+    height:100%;
+    width:20%;
+    background:#9affc9;
+    transition:.2s;
 }
 
-/* ===== SHAKE ===== */
-body.chaos{
-  animation:shake .15s infinite;
+/* ===== GLITCH ===== */
+.glitch{
+    animation:glitch .15s infinite;
 }
-@keyframes shake{
-  0%{transform:translate(0,0)}
-  25%{transform:translate(2px,-2px)}
-  50%{transform:translate(-2px,2px)}
-  75%{transform:translate(2px,2px)}
-  100%{transform:translate(0,0)}
+@keyframes glitch{
+    0%{transform:translate(0)}
+    25%{transform:translate(-2px,2px)}
+    50%{transform:translate(2px,-1px)}
+    75%{transform:translate(-1px,1px)}
+    100%{transform:translate(0)}
 }
 </style>
 </head>
 
 <body>
 
-<canvas id="matrix"></canvas>
+<div id="binary"></div>
 
-<!-- PROLOGUE -->
-<div id="prologue" class="screen active">
-  <div class="panel">
-    <div class="line show">СИСТЕМА ТРІЩИТЬ.</div>
-    <div class="line show">НЕ ЗОВНІ — ВСЕРЕДИНІ.</div>
-    <div class="line show glitch">ДАНІ БІЛЬШЕ НЕ СХОДЯТЬСЯ.</div>
-    <div class="line show">ПОТРІБЕН ПРИНЦИП.</div>
-  </div>
-</div>
-
-<!-- CHOICE -->
-<div id="choice" class="screen">
-  <div class="panel">
-    <div class="line show">ОБЕРИ ШЛЯХ.</div>
-
-    <div class="choice" style="border-color:var(--gold);color:var(--gold)"
-      onclick="selectPath('foundation')">
-      ФУНДАМЕНТ // СТІЙКІСТЬ
+<div id="panel">
+    <div class="system" id="systemLine">SYSTEM BOOT SEQUENCE</div>
+    <div class="text" id="content"></div>
+    <div id="choices"></div>
+    <div id="stability" style="display:none">
+        <div id="stabilityFill"></div>
     </div>
-
-    <div class="choice" style="border-color:var(--blue);color:var(--blue)">
-      АРХІТЕКТОР // ЛОГІКА
-    </div>
-
-    <div class="choice" style="border-color:var(--violet);color:var(--violet)">
-      РЕЗОНАНС // ЗВʼЯЗКИ
-    </div>
-  </div>
-</div>
-
-<!-- FOUNDATION -->
-<div id="foundation" class="screen">
-  <div class="panel">
-    <div class="line show" style="color:var(--gold)">ГЛАВА I — ФУНДАМЕНТ</div>
-    <div class="line show">ТИ НЕ ВИПРАВЛЯЄШ.</div>
-    <div class="line show">ТИ УТРИМУЄШ.</div>
-
-    <div class="line glitch">
-      РІВЕНЬ РОЗПАДУ: <span id="entropy">74</span>%
-    </div>
-
-    <div class="line glitch" id="sys"></div>
-
-    <div id="hold">УТРИМУЙ</div>
-  </div>
 </div>
 
 <script>
-/* ===== MATRIX ===== */
-const canvas=document.getElementById("matrix");
-const ctx=canvas.getContext("2d");
-let w,h,cols;
-function resize(){
-  w=canvas.width=innerWidth;
-  h=canvas.height=innerHeight;
-  cols=Math.floor(w/16);
-}
-resize();onresize=resize;
-const chars="01";
-let drops=Array(cols).fill(0);
-function matrix(){
-  ctx.fillStyle="rgba(0,0,0,.35)";
-  ctx.fillRect(0,0,w,h);
-  ctx.fillStyle="#00ff9c";
-  ctx.font="16px monospace";
-  drops.forEach((y,i)=>{
-    ctx.fillText(chars[Math.random()>0.5?1:0],i*16,y*16);
-    if(y*16>h||Math.random()>.97)drops[i]=0;
-    drops[i]++;
-  });
-  requestAnimationFrame(matrix);
-}
-matrix();
+/* ===== BINARY BACKGROUND ===== */
+const binary=document.getElementById("binary");
+setInterval(()=>{
+    let out="";
+    for(let i=0;i<800;i++){
+        out+=Math.random()>0.5?"1":"0";
+        if(i%60===0)out+="\n";
+    }
+    binary.textContent=out;
+},300);
 
-/* ===== FLOW ===== */
-setTimeout(()=>{
-  document.getElementById("prologue").classList.remove("active");
-  document.getElementById("choice").classList.add("active");
-},6000);
+/* ===== SCENE SYSTEM ===== */
+const content=document.getElementById("content");
+const choices=document.getElementById("choices");
+const systemLine=document.getElementById("systemLine");
+const stability=document.getElementById("stability");
+const stabilityFill=document.getElementById("stabilityFill");
 
-/* ===== FOUNDATION GAME ===== */
-let entropy=74;
-let holding=false;
-let stabilized=false;
-let fractures=[];
-const ent=document.getElementById("entropy");
-const sys=document.getElementById("sys");
-const hold=document.getElementById("hold");
+let scene="prologue";
+let hold=false;
+let value=20;
 
+/* ===== PROLOGUE ===== */
+content.innerHTML=
+"System integrity compromised.<br><br>" +
+"Core logic fractured.<br>" +
+"Temporal alignment: FAILED.<br><br>" +
+"You are connected to the last stable layer.";
+
+choices.innerHTML=
+"<div class='choice' onclick='selectPath(\"foundation\")'>FOUNDATION — hold structure</div>"+
+"<div class='choice' onclick='selectPath(\"architect\")'>ARCHITECT — rewrite logic</div>"+
+"<div class='choice' onclick='selectPath(\"resonance\")'>RESONANCE — synchronize flow</div>";
+
+/* ===== PATH SELECT ===== */
 function selectPath(p){
-  document.getElementById("choice").classList.remove("active");
-  if(p==="foundation"){
-    document.getElementById("foundation").classList.add("active");
-    startFoundation();
-  }
+    document.querySelectorAll('.choice').forEach(c=>c.classList.remove('active'));
+    event.target.classList.add('active');
+
+    setTimeout(()=>{
+        teleport(p);
+    },800);
 }
 
-hold.onmousedown=hold.ontouchstart=e=>{
-  e.preventDefault();
-  holding=true;
-  hold.classList.add("active");
-};
-document.onmouseup=document.ontouchend=()=>{
-  holding=false;
-  hold.classList.remove("active");
-};
-
-function spawnFracture(){
-  const f=document.createElement("div");
-  f.className="fracture";
-  f.style.top=Math.random()*80+"%";
-  f.style.left=Math.random()*80+"%";
-  f.onclick=()=>{
-    entropy-=6;
-    f.remove();
-    fractures=fractures.filter(x=>x!==f);
-  };
-  document.body.appendChild(f);
-  fractures.push(f);
+/* ===== TELEPORT ===== */
+function teleport(p){
+    document.body.classList.add("glitch");
+    setTimeout(()=>{
+        document.body.classList.remove("glitch");
+        if(p==="foundation")startFoundation();
+        else{
+            content.innerHTML="PATH LOCKED.<br>Not implemented yet.";
+            choices.innerHTML="";
+        }
+    },1000);
 }
 
+/* ===== FOUNDATION ARC ===== */
 function startFoundation(){
-  setInterval(()=>{
-    if(stabilized)return;
+    scene="foundation";
+    systemLine.textContent="FOUNDATION PROTOCOL";
+    content.innerHTML=
+    "Reality weight detected.<br><br>"+
+    "Your task is not action.<br>"+
+    "Your task is endurance.<br><br>"+
+    "Hold the system together.";
 
-    if(holding) entropy-=0.35;
-    else entropy+=0.45;
+    choices.innerHTML="<div class='choice'>PRESS AND HOLD TO STABILIZE</div>";
+    stability.style.display="block";
 
-    entropy+=fractures.length*0.25;
-    entropy=Math.max(0,Math.min(100,entropy));
-    ent.textContent=Math.floor(entropy);
+    document.addEventListener("mousedown",()=>hold=true);
+    document.addEventListener("mouseup",()=>hold=false);
+    document.addEventListener("touchstart",()=>hold=true);
+    document.addEventListener("touchend",()=>hold=false);
 
-    if(entropy>85){
-      sys.textContent="РОЗЛОМИ ПОГЛИНАЮТЬ СИСТЕМУ.";
-      document.body.classList.add("chaos");
-      if(Math.random()<0.07)spawnFracture();
-    }else if(entropy>70){
-      sys.textContent="СТРУКТУРА ТРІЩИТЬ.";
-      document.body.classList.remove("chaos");
-      if(Math.random()<0.04)spawnFracture();
+    loop();
+}
+
+/* ===== FOUNDATION LOOP ===== */
+function loop(){
+    if(scene!=="foundation")return;
+
+    if(hold){
+        value+=0.6;
+        document.body.classList.remove("glitch");
     }else{
-      sys.textContent="";
-      document.body.classList.remove("chaos");
+        value-=0.8;
+        document.body.classList.add("glitch");
     }
 
-    if(entropy<=1 && holding){
-      stabilized=true;
-      sys.textContent="ФУНДАМЕНТ УТРИМАНО.";
-      hold.textContent="ЗАФІКСОВАНО";
-      fractures.forEach(f=>f.remove());
+    value=Math.max(0,Math.min(100,value));
+    stabilityFill.style.width=value+"%";
+
+    if(value<=0){
+        content.innerHTML="SYSTEM COLLAPSE.<br>You released the weight.";
+        return;
     }
-  },80);
+
+    if(value>=100){
+        content.innerHTML=
+        "Stability achieved.<br><br>"+
+        "You did not fight.<br>"+
+        "You endured.";
+        document.body.classList.remove("glitch");
+        return;
+    }
+
+    requestAnimationFrame(loop);
 }
 </script>
 
