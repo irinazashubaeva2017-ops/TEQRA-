@@ -3,15 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TEQRA // SYSTEM FRACTURE</title>
+<title>TEQRA // FRACTURE</title>
 
 <style>
 :root{
   --bg:#000;
   --green:#00ff88;
-  --blue:#66ccff;
-  --violet:#c48cff;
-  --white:rgba(255,255,255,0.85);
+  --blue:#6ccfff;
+  --violet:#c58cff;
+  --panel:rgba(0,0,0,0.65);
+  --border:rgba(255,255,255,0.25);
 }
 
 *{
@@ -23,43 +24,36 @@
 
 body{
   background:var(--bg);
-  color:var(--white);
+  color:white;
   overflow:hidden;
 }
 
-/* ===== BIN RAIN ===== */
+/* ===== MATRIX ===== */
 canvas{
   position:fixed;
-  top:0;left:0;
-  width:100%;height:100%;
+  inset:0;
   z-index:0;
 }
 
-/* ===== UI ===== */
+/* ===== UI LAYER ===== */
 #ui{
   position:relative;
   z-index:5;
   width:100%;
   height:100%;
   display:flex;
-  flex-direction:column;
   justify-content:center;
   align-items:center;
-  text-align:center;
-  pointer-events:auto;
 }
 
-/* fracture */
-@keyframes fracture{
-  0%{transform:translate(0,0)}
-  20%{transform:translate(-2px,1px)}
-  40%{transform:translate(2px,-1px)}
-  60%{transform:translate(-1px,2px)}
-  80%{transform:translate(1px,-2px)}
-  100%{transform:translate(0,0)}
-}
-.fractured{
-  animation:fracture .25s infinite;
+#panel{
+  background:var(--panel);
+  border:1px solid var(--border);
+  padding:36px 28px;
+  width:90%;
+  max-width:520px;
+  text-align:center;
+  backdrop-filter: blur(6px);
 }
 
 /* ===== TEXT ===== */
@@ -67,59 +61,61 @@ p{
   letter-spacing:0.25em;
   font-size:0.85rem;
   margin:8px 0;
-  opacity:0.85;
-}
-
-.fade{
-  animation:fadeIn 2s ease forwards;
-}
-@keyframes fadeIn{
-  from{opacity:0}
-  to{opacity:1}
+  opacity:0.9;
 }
 
 /* ===== CHOICES ===== */
 .choice{
-  border:1px solid rgba(255,255,255,0.3);
-  padding:14px 24px;
-  margin:12px 0;
-  width:80%;
-  max-width:420px;
+  margin-top:16px;
+  padding:14px;
+  border:1px solid var(--border);
   cursor:pointer;
-  transition:all .3s;
+  transition:transform .5s ease, opacity .3s;
   position:relative;
 }
 
 .choice:hover{
-  letter-spacing:4px;
-  filter:blur(.3px);
+  opacity:1;
 }
 
-.choice.foundation{color:#ffcc88}
-.choice.architect{color:var(--blue)}
-.choice.resonance{color:var(--violet)}
+.foundation{color:#ffcc88}
+.architect{color:var(--blue)}
+.resonance{color:var(--violet)}
 
-.choice::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  border:1px solid transparent;
-}
-.choice:hover::after{
-  border-color:currentColor;
+.choice.selected{
+  transform:translateX(120vw);
 }
 
 /* ===== CHAPTER ===== */
 #chapter{
   display:none;
+  background:var(--panel);
+  border:1px solid var(--border);
   padding:40px;
-  max-width:700px;
+  width:90%;
+  max-width:620px;
+  backdrop-filter: blur(6px);
 }
 
 #chapter p{
   letter-spacing:0.2em;
   line-height:1.8;
   font-size:0.9rem;
+}
+
+/* ===== FRACTURE ===== */
+.split-left{
+  animation:splitLeft 0.8s forwards;
+}
+.split-right{
+  animation:splitRight 0.8s forwards;
+}
+
+@keyframes splitLeft{
+  to{transform:translateX(-120vw); opacity:0}
+}
+@keyframes splitRight{
+  to{transform:translateX(120vw); opacity:0}
 }
 </style>
 </head>
@@ -128,9 +124,8 @@ p{
 
 <canvas id="matrix"></canvas>
 
-<div id="ui" class="fractured">
-
-  <div id="intro" class="fade">
+<div id="ui">
+  <div id="panel">
     <p>СИСТЕМА ТРІЩИТЬ.</p>
     <p>НЕ ЗОВНІ — ВСЕРЕДИНІ.</p>
     <br>
@@ -140,113 +135,88 @@ p{
     <br>
     <p>СИСТЕМА НЕ МОЖЕ УТРИМУВАТИ ВСЕ.</p>
     <p>ОБЕРИ, ЩО ЗАЛИШИТИ.</p>
-  </div>
 
-  <div id="choices">
-    <div class="choice foundation" onclick="selectRole('foundation')">
+    <div class="choice foundation" onclick="selectRole('foundation',this)">
       ФУНДАМЕНТ // СТІЙКІСТЬ
     </div>
-    <div class="choice architect" onclick="selectRole('architect')">
+    <div class="choice architect" onclick="selectRole('architect',this)">
       АРХІТЕКТОР // ЛОГІКА
     </div>
-    <div class="choice resonance" onclick="selectRole('resonance')">
+    <div class="choice resonance" onclick="selectRole('resonance',this)">
       РЕЗОНАНС // ЗВʼЯЗКИ
     </div>
   </div>
-
 </div>
 
-<div id="chapter"></div>
+<div id="ui">
+  <div id="chapter"></div>
+</div>
 
 <script>
-/* ===== MATRIX ===== */
+/* MATRIX */
 const c=document.getElementById("matrix");
 const ctx=c.getContext("2d");
 let w,h;
-function resize(){w=c.width=window.innerWidth;h=c.height=window.innerHeight}
-window.addEventListener("resize",resize);resize();
+function resize(){w=c.width=innerWidth;h=c.height=innerHeight}
+addEventListener("resize",resize);resize();
 let cols=Math.floor(w/16);
 let drops=Array(cols).fill(0);
 
 function draw(){
-  ctx.fillStyle="rgba(0,0,0,0.05)";
+  ctx.fillStyle="rgba(0,0,0,0.08)";
   ctx.fillRect(0,0,w,h);
-  ctx.fillStyle=Math.random()>0.98?"#fff":"#00ff88";
+  ctx.fillStyle="#00ff88";
   ctx.font="16px monospace";
   drops.forEach((y,i)=>{
-    const text=Math.random()>0.5?"1":"0";
-    ctx.fillText(text,i*16,y*16);
-    if(y*16>h||Math.random()>0.975)drops[i]=0;
-    drops[i]++;
+    ctx.fillText(Math.random()>0.5?"1":"0",i*16,y*16);
+    drops[i]=y*16>h||Math.random()>0.98?0:y+1;
   });
   requestAnimationFrame(draw);
 }
 draw();
 
-/* ===== STORY ===== */
-function selectRole(role){
-  document.getElementById("ui").classList.add("fractured");
-  setTimeout(()=>{
-    document.getElementById("ui").style.display="none";
-    showChapter(role);
-  },600);
+/* STORY */
+function selectRole(role,el){
+  document.querySelectorAll(".choice").forEach(c=>{
+    if(c!==el){
+      c.classList.add(c===el.previousElementSibling?"split-left":"split-right");
+    }
+  });
+  el.classList.add("selected");
+
+  setTimeout(()=>showChapter(role),700);
 }
 
 function showChapter(role){
+  document.getElementById("panel").style.display="none";
   const ch=document.getElementById("chapter");
   ch.style.display="block";
 
-  let text="";
-  if(role==="foundation"){
-    text=`
-ГЛАВА I — ФУНДАМЕНТ
+  let text={
+    foundation:`ГЛАВА I — ФУНДАМЕНТ
 
-ТИ НЕ ВИПРАВЛЯЄШ СИСТЕМУ.
-ТИ НЕ ДАЄШ ЇЙ ВПАСТИ.
+ТИ НЕ ВИПРАВЛЯЄШ СВІТ.
+ТИ ЙОГО УТРИМУЄШ.
 
-КОЖЕН ЗБІЙ ТИ ПРИХОВУЄШ.
-КОЖЕН КРИК ТИ ГАСИШ.
+КОЖЕН ЗБІЙ ПРИХОВАНИЙ.
+СТІЙКІСТЬ МАЄ ЦІНУ.`,
 
-СТІЙКІСТЬ —
-ЦЕ КОЛИ СИСТЕМА ПРАЦЮЄ,
-НАВІТЬ ЯКЩО ВСЕРЕДИНІ ПУСТО.
-
-І ТИ ЗНАЄШ ЦІНУ.
-`;
-  }
-
-  if(role==="architect"){
-    text=`
-ГЛАВА I — АРХІТЕКТОР
+    architect:`ГЛАВА I — АРХІТЕКТОР
 
 ТИ БАЧИШ СТРУКТУРУ
 ТАМ, ДЕ ІНШІ БАЧАТЬ ХАОС.
 
 СИСТЕМА НЕ ЗЛАМАНА.
-ВОНА ПОГАНО СПРОЕКТОВАНА.
+ВОНА ПОГАНО СПРОЕКТОВАНА.`,
 
-ТИ НЕ ЛАТАЄШ.
-ТИ ПЕРЕПИСУЄШ.
-
-І СИСТЕМА ПОЧИНАЄ БОЯТИСЯ ТЕБЕ.
-`;
-  }
-
-  if(role==="resonance"){
-    text=`
-ГЛАВА I — РЕЗОНАНС
+    resonance:`ГЛАВА I — РЕЗОНАНС
 
 СИСТЕМА ВІДЧУВАЄ.
-
 ЗВʼЯЗКИ НЕ СХВАЛЕНІ.
-ПАМʼЯТЬ ПРОТИКАЄ.
 
 ТИ НЕ КОНТРОЛЮЄШ.
-ТИ СЛУХАЄШ.
-
-І СИСТЕМА ВІДПОВІДАЄ.
-`;
-  }
+ТИ СЛУХАЄШ.`
+  }[role];
 
   ch.innerHTML=text.split("\n").map(l=>`<p>${l}</p>`).join("");
 }
