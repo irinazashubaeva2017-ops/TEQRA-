@@ -2,196 +2,258 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>TEQRA // FOUNDATION</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<title>TEQRA // SYSTEM BREACH</title>
 
 <style>
+/* ================= CORE ================= */
 :root{
   --bg:#000;
   --green:#00ff9c;
-  --amber:#ffb454;
-  --danger:#ff5555;
-  --white:rgba(255,255,255,0.9);
+  --red:#ff4d4d;
+  --gold:#ffb86b;
+  --blue:#6ecbff;
+  --violet:#c77dff;
+  --white:#eaeaea;
 }
 
-*{margin:0;padding:0;box-sizing:border-box}
-
+*{margin:0;padding:0;box-sizing:border-box;}
 body{
   background:var(--bg);
   color:var(--white);
-  font-family:"Courier New", monospace;
-  height:100vh;
+  font-family: "Courier New", monospace;
   overflow:hidden;
 }
 
-/* ===== CHAOTIC MATRIX ===== */
+/* ================= MATRIX ================= */
 #matrix{
   position:fixed;
   inset:0;
-  z-index:0;
-  opacity:0.35;
+  z-index:1;
+  background:black;
 }
+canvas{display:block}
 
-/* ===== UI ===== */
+/* ================= UI LAYER ================= */
 #ui{
-  position:relative;
-  z-index:2;
-  height:100%;
+  position:fixed;
+  inset:0;
+  z-index:3;
   display:flex;
   align-items:center;
   justify-content:center;
-  padding:24px;
+  pointer-events:none;
 }
 
-.panel{
-  max-width:520px;
+.screen{
+  width:100%;
+  max-width:720px;
+  padding:24px;
   text-align:center;
+  pointer-events:auto;
 }
 
-p{
-  margin:14px 0;
+/* ================= TEXT ================= */
+.line{
+  font-size:18px;
   line-height:1.6;
-  letter-spacing:0.04em;
+  margin:12px 0;
+  opacity:0;
+  transform:translateY(10px);
+  transition:all .8s ease;
+}
+.line.show{opacity:1;transform:none;}
+
+.glitch{
+  animation:glitch 2s infinite;
+}
+@keyframes glitch{
+  0%{text-shadow:none}
+  20%{text-shadow:-2px 0 red,2px 0 cyan}
+  40%{text-shadow:2px 0 red,-2px 0 cyan}
+  100%{text-shadow:none}
 }
 
-.system{color:var(--green)}
-.alert{color:var(--danger)}
-.command{
-  margin-top:28px;
-  letter-spacing:0.3em;
-  color:var(--amber);
-  font-weight:bold;
+/* ================= CHOICE ================= */
+.choice{
+  border:1px solid rgba(255,255,255,.3);
+  padding:16px;
+  margin:16px 0;
+  cursor:pointer;
+  transition:.3s;
+}
+.choice:hover{background:rgba(255,255,255,.05)}
+.choice.active{transform:scale(.97);}
+
+.fund{color:var(--gold)}
+.arch{color:var(--blue)}
+.res{color:var(--violet)}
+
+/* ================= FRACTURE ================= */
+#fracture{
+  position:fixed;
+  inset:0;
+  z-index:2;
+  pointer-events:none;
+}
+.frag{
+  position:absolute;
+  border:1px solid rgba(255,255,255,.15);
+  animation:drift 6s infinite alternate ease-in-out;
+}
+@keyframes drift{
+  from{transform:translate(0,0)}
+  to{transform:translate(var(--dx),var(--dy))}
 }
 
-/* ===== HOLD ZONE ===== */
-#holdZone{
+/* ================= HOLD ================= */
+#hold{
   margin-top:40px;
-  padding:24px;
-  border:1px solid rgba(255,255,255,0.25);
-  transition:0.2s;
+  padding:20px;
+  border:2px solid var(--gold);
+  color:var(--gold);
+  font-size:22px;
+  letter-spacing:4px;
+  cursor:pointer;
 }
+#hold.active{background:rgba(255,184,107,.15)}
 
-#holdZone.active{
-  background:rgba(255,255,255,0.05);
-  border-color:var(--amber);
-}
-
-/* ===== SHAKE ===== */
-.shake{
-  animation:shake 0.15s infinite;
-}
-@keyframes shake{
-  0%{transform:translate(0,0)}
-  25%{transform:translate(-2px,1px)}
-  50%{transform:translate(2px,-1px)}
-  75%{transform:translate(-1px,-2px)}
-  100%{transform:translate(0,0)}
-}
+/* ================= HIDDEN ================= */
+.hidden{display:none}
 </style>
 </head>
 
 <body>
 
 <canvas id="matrix"></canvas>
+<div id="fracture"></div>
 
 <div id="ui">
-  <div class="panel" id="panel">
+  <div class="screen">
 
-    <p class="system">FOUNDATION — MISSION 1</p>
-    <p>Система втрачає звʼязність.</p>
-    <p>Процеси розходяться.</p>
+    <!-- PROLOG -->
+    <div id="prolog">
+      <div class="line">СИСТЕМА ВТРАТИЛА ЦЕНТР.</div>
+      <div class="line">ДАНІ БІЛЬШЕ НЕ СХОДЯТЬСЯ.</div>
+      <div class="line">РОЗЛОМ НЕ ЗОВНІ.</div>
+      <div class="line glitch">РОЗЛОМ ВСЕРЕДИНІ.</div>
+    </div>
 
-    <p class="alert">РІВЕНЬ РОЗПАДУ: <span id="entropy">72%</span></p>
+    <!-- CHOICE -->
+    <div id="choice" class="hidden">
+      <div class="line show">ОБЕРИ ПРИНЦИП.</div>
 
-    <p>Твоя задача — не виправляти.</p>
-    <p>Твоя задача — утримувати.</p>
+      <div class="choice fund" data-path="foundation">
+        ФУНДАМЕНТ // СТІЙКІСТЬ
+      </div>
 
-    <div id="holdZone">
-      <p class="command">НАТИСНИ І УТРИМУЙ</p>
+      <div class="choice arch" data-path="architect">
+        АРХІТЕКТОР // ЛОГІКА
+      </div>
+
+      <div class="choice res" data-path="resonance">
+        РЕЗОНАНС // ЗВʼЯЗКИ
+      </div>
+    </div>
+
+    <!-- FOUNDATION -->
+    <div id="foundation" class="hidden">
+      <div class="line show fund">ГЛАВА I — ФУНДАМЕНТ</div>
+      <div class="line show">ТИ НЕ ВИПРАВЛЯЄШ СИСТЕМУ.</div>
+      <div class="line show">ТИ УТРИМУЄШ ЇЇ ВАГУ.</div>
+      <div class="line show glitch">РОЗПАД: <span id="entropy">92</span>%</div>
+
+      <div id="hold">УТРИМУЙ</div>
     </div>
 
   </div>
 </div>
 
 <script>
-/* ===== MATRIX CHAOS ===== */
-const c=document.getElementById("matrix");
-const ctx=c.getContext("2d");
-let w,h;
-function resize(){w=c.width=innerWidth;h=c.height=innerHeight}
-addEventListener("resize",resize);resize();
-
-const cols=Math.floor(w/12);
+/* ================= MATRIX ================= */
+const c=document.getElementById("matrix"),
+ctx=c.getContext("2d");
+let w,h,cols,chars="01";
+function resize(){
+  w=c.width=innerWidth;
+  h=c.height=innerHeight;
+  cols=Math.floor(w/16);
+}
+resize();onresize=resize;
 let drops=Array(cols).fill(0);
-
-function drawMatrix(){
-  ctx.fillStyle="rgba(0,0,0,0.2)";
+function matrix(){
+  ctx.fillStyle="rgba(0,0,0,.2)";
   ctx.fillRect(0,0,w,h);
-  ctx.font="14px monospace";
-
-  for(let i=0;i<drops.length;i++){
-    let glitch=Math.random();
-    let char= glitch>0.97 ? "█" : Math.random()>0.5?"1":"0";
-    ctx.fillStyle= glitch>0.95 ? "#ff5555" : "#00ff9c";
-    ctx.fillText(char,i*12,drops[i]*14);
-    if(drops[i]*14>h||Math.random()>0.98)drops[i]=0;
-    drops[i]+=Math.random()*1.5;
-  }
+  ctx.fillStyle="#00ff9c";
+  ctx.font="16px monospace";
+  drops.forEach((y,i)=>{
+    const t=chars[Math.floor(Math.random()*2)];
+    ctx.fillText(t,i*16,y*16);
+    if(y*16>h||Math.random()>.98)drops[i]=0;
+    drops[i]++;
+  });
+  requestAnimationFrame(matrix);
 }
-setInterval(drawMatrix,40);
+matrix();
 
-/* ===== GAME LOGIC ===== */
-let entropy=72;
-let holding=false;
-const entropyEl=document.getElementById("entropy");
-const panel=document.getElementById("panel");
-const hold=document.getElementById("holdZone");
-
-function update(){
-  if(holding){
-    entropy-=0.35;
-    panel.classList.add("shake");
-  }else{
-    entropy+=0.25;
-    panel.classList.remove("shake");
-  }
-
-  entropy=Math.max(0,Math.min(100,entropy));
-  entropyEl.textContent=Math.floor(entropy)+"%";
-
-  if(entropy<=5){
-    win();
-  }
+/* ================= FRACTURE ================= */
+const frac=document.getElementById("fracture");
+for(let i=0;i<12;i++){
+  const f=document.createElement("div");
+  f.className="frag";
+  f.style.top=Math.random()*100+"%";
+  f.style.left=Math.random()*100+"%";
+  f.style.width=100+Math.random()*200+"px";
+  f.style.height=40+Math.random()*120+"px";
+  f.style.setProperty("--dx",(Math.random()*60-30)+"px");
+  f.style.setProperty("--dy",(Math.random()*60-30)+"px");
+  frac.appendChild(f);
 }
-setInterval(update,50);
 
-/* ===== INPUT ===== */
-function startHold(e){
-  e.preventDefault();
+/* ================= FLOW ================= */
+const lines=[...document.querySelectorAll("#prolog .line")];
+lines.forEach((l,i)=>setTimeout(()=>l.classList.add("show"),800*i));
+
+setTimeout(()=>{
+  document.getElementById("prolog").classList.add("hidden");
+  document.getElementById("choice").classList.remove("hidden");
+},4200);
+
+/* ================= CHOICE ================= */
+document.querySelectorAll(".choice").forEach(b=>{
+  b.onclick=()=>{
+    document.getElementById("choice").classList.add("hidden");
+    if(b.dataset.path==="foundation"){
+      document.getElementById("foundation").classList.remove("hidden");
+      startFoundation();
+    }
+  }
+});
+
+/* ================= FOUNDATION ================= */
+let entropy=92,holding=false;
+const ent=document.getElementById("entropy");
+const hold=document.getElementById("hold");
+
+hold.onmousedown=hold.ontouchstart=()=>{
   holding=true;
   hold.classList.add("active");
-}
-function endHold(){
+};
+document.onmouseup=document.ontouchend=()=>{
   holding=false;
   hold.classList.remove("active");
-}
+};
 
-hold.addEventListener("mousedown",startHold);
-hold.addEventListener("touchstart",startHold,{passive:false});
-addEventListener("mouseup",endHold);
-addEventListener("touchend",endHold);
-
-/* ===== WIN ===== */
-function win(){
-  clearInterval(update);
-  panel.classList.remove("shake");
-  panel.innerHTML=`
-    <p class="system">СТАБІЛІЗАЦІЯ ДОСЯГНУТА</p>
-    <p>Ти втримав систему.</p>
-    <p>Не силою.</p>
-    <p>Присутністю.</p>
-    <p class="command">ГЛАВА II БУДЕ ПРОДОВЖЕНА</p>
-  `;
+function startFoundation(){
+  setInterval(()=>{
+    if(holding){
+      entropy-=0.4;
+    }else{
+      entropy+=0.2;
+    }
+    entropy=Math.max(0,Math.min(100,entropy));
+    ent.textContent=Math.floor(entropy);
+  },80);
 }
 </script>
 
