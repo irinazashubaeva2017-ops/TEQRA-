@@ -2,32 +2,19 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEQRA | SYSTEM 3036</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TEQRA | SYSTEM 3036 [REBOOT]</title>
     <style>
-        /* --- 1. CORE STYLES & VARIABLES --- */
+        /* --- CORE STYLES --- */
         :root {
-            /* Palette: Post-System / Future 3000+ */
-            --bg-deep: #050507; /* Cosmic Void */
-            --bg-panel: #0f1014; /* Graphite */
+            --bg-deep: #050507;
             --text-main: #e0e0e0;
             --text-dim: #606570;
-            
-            /* Roles Colors */
-            --col-foundation: #d4af37; /* Gold/Amber - Stability */
-            --col-architect: #4da6ff; /* Logic Blue - Structure */
-            --col-resonance: #9d4dff; /* Spectral Purple - Harmony */
-            
-            /* System States */
-            --col-danger: #cf3e3e;
-            --col-success: #3ecf8e;
-
-            /* Typography */
-            --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            --font-data: 'JetBrains Mono', 'Courier New', monospace;
-            
-            /* Animation timings */
-            --ease-sys: cubic-bezier(0.2, 0.8, 0.2, 1);
+            --col-foundation: #d4af37;
+            --col-architect: #4da6ff;
+            --col-resonance: #9d4dff;
+            --font-main: 'Inter', system-ui, sans-serif;
+            --font-data: 'Courier New', monospace;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -36,730 +23,367 @@
             background-color: var(--bg-deep);
             color: var(--text-main);
             font-family: var(--font-main);
-            overflow: hidden;
             height: 100vh;
             width: 100vw;
+            overflow: hidden;
             user-select: none;
-            cursor: crosshair;
-        }
-
-        /* --- 2. UI ARCHITECTURE --- */
-        #interface {
-            position: relative;
-            width: 100%;
-            height: 100%;
+            -webkit-user-select: none;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 10;
         }
 
+        /* --- UI LAYERS --- */
         .screen {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 1.5s var(--ease-sys);
-            display: flex;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: none; /* Hide by default */
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            opacity: 0;
+            transition: opacity 1s ease;
+            z-index: 10;
         }
-
+        
         .screen.active {
+            display: flex;
             opacity: 1;
-            pointer-events: all;
         }
 
-        /* TYPOGRAPHY UTILS */
-        .sys-text {
+        /* --- START BUTTON (SAFETY) --- */
+        #init-layer {
+            z-index: 100;
+            background: var(--bg-deep);
+        }
+        
+        .big-btn {
+            border: 1px solid var(--text-dim);
+            background: transparent;
+            color: var(--text-main);
+            padding: 20px 40px;
+            font-family: var(--font-data);
             font-size: 1.2rem;
-            letter-spacing: 0.05em;
-            line-height: 1.6;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.3s;
+        }
+        .big-btn:active { background: #222; border-color: #fff; }
+
+        /* --- TEXT & ROLES --- */
+        .sys-text {
             text-align: center;
-            max-width: 600px;
+            max-width: 90%;
+            line-height: 1.6;
             margin-bottom: 20px;
         }
         
-        .sys-data {
-            font-family: var(--font-data);
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            text-transform: uppercase;
-        }
-
-        .sys-btn {
-            background: transparent;
-            border: 1px solid var(--text-dim);
-            color: var(--text-dim);
-            padding: 10px 20px;
-            font-family: var(--font-data);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 20px;
-        }
-
-        .sys-btn:hover {
-            border-color: var(--text-main);
-            color: var(--text-main);
-        }
-
-        /* --- SCREEN: PROLOGUE --- */
-        #prologue-text {
-            opacity: 0;
-            transform: translateY(10px);
-            transition: all 1s ease;
-        }
-
-        /* --- SCREEN: SELECTION (THE CORE) --- */
         .role-container {
             display: flex;
-            gap: 40px;
-            margin-top: 40px;
+            gap: 20px;
+            flex-wrap: wrap; /* Mobile friendly */
+            justify-content: center;
         }
 
         .role-node {
-            width: 200px;
-            height: 300px;
-            border: 1px solid var(--text-dim);
+            width: 180px;
+            height: 240px;
+            border: 1px solid #333;
+            padding: 20px;
+            position: relative;
+            background: rgba(20,20,25,0.5);
+            transition: 0.3s;
+            cursor: pointer;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
-            padding: 20px;
-            position: relative;
-            transition: all 0.5s var(--ease-sys);
-            cursor: pointer;
-            background: rgba(15, 16, 20, 0.5);
         }
 
-        .role-node h3 {
-            font-weight: 300;
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-            text-transform: uppercase;
+        /* Active touch state */
+        .role-node:active, .role-node.touch-active {
+            transform: scale(0.98);
+            background: rgba(50,50,50,0.5);
         }
 
-        .role-node p {
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            line-height: 1.4;
-        }
-
-        /* Specific Role Styling */
-        .role-node[data-role="foundation"]:hover, .role-node[data-role="foundation"].locked {
-            border-color: var(--col-foundation);
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.1);
-        }
-        .role-node[data-role="architect"]:hover, .role-node[data-role="architect"].locked {
-            border-color: var(--col-architect);
-            box-shadow: 0 0 30px rgba(77, 166, 255, 0.1);
-        }
-        .role-node[data-role="resonance"]:hover, .role-node[data-role="resonance"].locked {
-            border-color: var(--col-resonance);
-            box-shadow: 0 0 30px rgba(157, 77, 255, 0.1);
-        }
+        .role-node h3 { font-size: 1.2rem; margin-bottom: 10px; pointer-events: none; }
+        .role-node p { font-size: 0.7rem; color: var(--text-dim); pointer-events: none; }
 
         .progress-bar {
             position: absolute;
-            bottom: 0;
-            left: 0;
-            height: 2px;
-            width: 0%;
-            transition: width 0.1s linear;
-        }
-        
-        .role-node[data-role="foundation"] .progress-bar { background: var(--col-foundation); }
-        .role-node[data-role="architect"] .progress-bar { background: var(--col-architect); }
-        .role-node[data-role="resonance"] .progress-bar { background: var(--col-resonance); }
-
-        /* --- SCREEN: GAME HUD --- */
-        #hud {
-            position: fixed;
-            top: 20px;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 40px;
-            font-family: var(--font-data);
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            z-index: 100;
-            pointer-events: none;
+            bottom: 0; left: 0; height: 4px; width: 0%;
+            background: white;
+            transition: width 0s; /* Controlled by JS */
         }
 
-        #hud span { pointer-events: all; }
-        
-        .hud-value { color: var(--text-main); }
-        
+        /* GAME AREA */
         #game-area {
-            position: absolute;
-            top: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 800px;
-            height: 500px;
-            border: 1px solid #222;
-            background: rgba(10,10,12,0.8);
+            width: 100%;
+            height: 60vh;
+            border-top: 1px solid #333;
+            border-bottom: 1px solid #333;
+            position: relative;
             overflow: hidden;
+            background: rgba(10,10,12,0.5);
         }
-
-        /* MECHANIC: FOUNDATION */
+        
         .rift {
             position: absolute;
-            background: #111;
-            border: 1px solid var(--text-dim);
-            cursor: pointer;
-            transition: transform 0.2s;
+            width: 50px; height: 50px;
+            background: #222;
+            border: 1px solid #555;
+            display: flex; align-items: center; justify-content: center;
         }
-        .rift.real {
-            border-color: var(--col-foundation);
-            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
-        }
-        .rift.fake {
-            border-color: #333;
-            opacity: 0.5;
-            animation: drift 5s infinite linear;
-        }
-        @keyframes drift {
-            0% { transform: translate(0,0); }
-            50% { transform: translate(10px, -10px); }
-            100% { transform: translate(0,0); }
-        }
+        
+        .rift.real { border-color: var(--col-foundation); box-shadow: 0 0 15px rgba(212,175,55,0.3); }
 
-        /* MECHANIC: ARCHITECT */
-        .data-stream {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            height: 100%;
-            justify-content: center;
-            align-items: center;
-        }
-        .data-block {
-            width: 300px;
-            height: 40px;
-            border: 1px solid #333;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            font-family: var(--font-data);
-            font-size: 0.7rem;
+        /* HUD */
+        #hud {
+            position: absolute; top: 10px; width: 100%;
+            display: flex; justify-content: space-between; padding: 0 20px;
+            font-family: var(--font-data); font-size: 0.8rem;
             color: var(--text-dim);
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .data-block:hover { border-color: var(--col-architect); color: var(--col-architect); }
-        .data-block.aligned { border-color: var(--col-success); color: var(--col-success); pointer-events: none; }
-
-        /* MECHANIC: RESONANCE */
-        .res-circle {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            border-radius: 50%;
-            border: 1px solid var(--col-resonance);
-            box-shadow: 0 0 20px rgba(157, 77, 255, 0.2);
-            opacity: 0;
-        }
-        .target-ring {
-            width: 200px;
-            height: 200px;
-            border: 1px solid var(--text-dim);
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            border-radius: 50%;
-        }
-
-        /* --- SCREEN: UNION / SHOP --- */
-        .union-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            width: 800px;
-        }
-        .artifact {
-            border: 1px solid #222;
-            padding: 20px;
-            transition: 0.3s;
-        }
-        .artifact:hover {
-            border-color: var(--text-main);
-            background: #111;
-        }
-        .artifact h4 { font-weight: 400; font-size: 0.9rem; margin-bottom: 10px; color: var(--col-foundation);}
-        .artifact p { font-size: 0.7rem; color: var(--text-dim); }
-        .artifact .meta { margin-top: 15px; font-family: var(--font-data); font-size: 0.6rem; opacity: 0.5; }
-
-        /* --- PAUSE OVERLAY --- */
-        #pause-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(5,5,7,0.95);
-            z-index: 200;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
             pointer-events: none;
-            transition: opacity 0.3s;
         }
-        #pause-overlay.active { opacity: 1; pointer-events: all; }
 
     </style>
 </head>
 <body>
 
-    <div id="hud" class="hidden">
-        <div id="system-status">СТАТУС: <span class="hud-value" id="status-val">СТАБІЛЬНИЙ</span></div>
-        <div id="integrity-container">ЦІЛІСНІСТЬ: <span class="hud-value" id="integrity-val">100%</span></div>
-        <div class="controls">
-            <span id="pause-btn" style="cursor: pointer;">[ПАУЗА]</span>
-        </div>
+    <div id="init-layer" class="screen active">
+        <div style="margin-bottom: 20px; font-family: var(--font-data);">TEQRA OS v.3036</div>
+        <button class="big-btn" onclick="System.boot()">ІНІЦІАЛІЗАЦІЯ СИСТЕМИ</button>
     </div>
 
-    <div id="interface">
-        
-        <div id="screen-prologue" class="screen active">
-            <div id="prologue-text" class="sys-text"></div>
-            <div id="start-prompt" class="sys-data" style="margin-top: 50px; opacity: 0;">УТРИМУЙТЕ ПОГЛЯД ДЛЯ СИНХРОНІЗАЦІЇ</div>
-        </div>
+    <div id="screen-prologue" class="screen">
+        <div id="prologue-text" class="sys-text"></div>
+        <button class="sys-btn" style="margin-top:20px; opacity:0; border:none; color:#555;" id="skip-btn">Торкніться для продовження</button>
+    </div>
 
-        <div id="screen-select" class="screen">
-            <div class="sys-text">ОБЕРІТЬ ПРОТОКОЛ ВЗАЄМОДІЇ</div>
-            <div class="role-container">
-                
-                <div class="role-node" data-role="foundation" onmousedown="startSelect('foundation')" onmouseup="cancelSelect()" onmouseleave="cancelSelect()">
-                    <h3>Фундамент</h3>
-                    <p>Утримання стабільності. Знешкодження розломів ядра. Опір хаосу.</p>
-                    <div class="progress-bar"></div>
-                </div>
-
-                <div class="role-node" data-role="architect" onmousedown="startSelect('architect')" onmouseup="cancelSelect()" onmouseleave="cancelSelect()">
-                    <h3>Архітектор</h3>
-                    <p>Логіка та структура. Відновлення ланцюгів даних. Сортування потоків.</p>
-                    <div class="progress-bar"></div>
-                </div>
-
-                <div class="role-node" data-role="resonance" onmousedown="startSelect('resonance')" onmouseup="cancelSelect()" onmouseleave="cancelSelect()">
-                    <h3>Резонанс</h3>
-                    <p>Гармонія. Синхронізація ритмів системи. Відчуття хвиль.</p>
-                    <div class="progress-bar"></div>
-                </div>
-
+    <div id="screen-select" class="screen">
+        <div class="sys-text">ОБЕРІТЬ ШЛЯХ<br><span style="font-size:0.7em; color:gray;">(Затисніть блок на 2 секунди)</span></div>
+        <div class="role-container">
+            <div id="role-found" class="role-node" style="border-bottom-color: var(--col-foundation);">
+                <h3>ФУНДАМЕНТ</h3>
+                <p>Стабільність. Захист ядра.</p>
+                <div class="progress-bar" style="background: var(--col-foundation);"></div>
             </div>
-        </div>
-
-        <div id="screen-game" class="screen">
-            <div class="sys-text" id="mission-brief"></div>
-            <div id="game-area"></div>
-        </div>
-
-        <div id="screen-union" class="screen">
-            <div class="sys-text" style="color: var(--col-foundation)">ФАЗА ОБ'ЄДНАННЯ АКТИВОВАНА</div>
-            <p class="sys-text" style="font-size: 0.9rem; margin-bottom: 40px;">
-                Система стабілізована. Ваші дії матеріалізовано в реальності.
-                <br>Оберіть артефакт для перенесення.
-            </p>
             
-            <div class="union-grid">
-                <div class="artifact">
-                    <h4>MODULE: TEQRA CORE</h4>
-                    <p>Ноутбук Dell Latitude. Відновлений. Налаштований. Готовий до обробки даних.</p>
-                    <div class="meta">ID: 7390-US-R // STATUS: AVAILABLE</div>
-                </div>
-                <div class="artifact" style="border-color: var(--col-architect);">
-                    <h4>CHIP: LOGIC KEY</h4>
-                    <p>Процесор Intel Core i7. Архітектура минулого, що працює у майбутньому.</p>
-                    <div class="meta">ID: INT-8-GEN // STATUS: LIMITED</div>
-                </div>
-                <div class="artifact" style="border-color: var(--col-resonance);">
-                    <h4>VISUAL: CLEAR VIEW</h4>
-                    <p>Дисплейна матриця 13.3". Чистий потік світла без викривлень.</p>
-                    <div class="meta">ID: FHD-IPS // STATUS: IN STOCK</div>
-                </div>
+            <div id="role-arch" class="role-node" style="border-bottom-color: var(--col-architect);">
+                <h3>АРХІТЕКТОР</h3>
+                <p>Логіка. Структура даних.</p>
+                <div class="progress-bar" style="background: var(--col-architect);"></div>
             </div>
 
-            <button class="sys-btn" onclick="Game.resetSystem()">ПЕРЕЗАВАНТАЖИТИ ЦИКЛ</button>
+            <div id="role-res" class="role-node" style="border-bottom-color: var(--col-resonance);">
+                <h3>РЕЗОНАНС</h3>
+                <p>Гармонія. Ритм хвиль.</p>
+                <div class="progress-bar" style="background: var(--col-resonance);"></div>
+            </div>
         </div>
-
     </div>
 
-    <div id="pause-overlay">
-        <div class="sys-text">СИСТЕМА НА ПАУЗІ</div>
-        <button class="sys-btn" onclick="Game.togglePause()">ПРОДОВЖИТИ</button>
-        <button class="sys-btn" onclick="Game.saveAndExit()">ЗБЕРЕГТИ ТА ВИЙТИ</button>
+    <div id="screen-game" class="screen">
+        <div id="hud">
+            <span>INTEGRITY: <span id="val-integrity" style="color:white">100%</span></span>
+            <span onclick="System.reset()" style="pointer-events:all; cursor:pointer;">[EXIT]</span>
+        </div>
+        <div class="sys-text" id="mission-text" style="margin-top: 50px;"></div>
+        <div id="game-area"></div>
+    </div>
+
+    <div id="screen-shop" class="screen">
+        <h2 class="sys-text" style="color:var(--col-foundation)">СИНХРОНІЗАЦІЯ ЗАВЕРШЕНА</h2>
+        <div class="sys-text">Артефакти доступні для матеріалізації.</div>
+        <div style="border:1px solid #333; padding:20px; width:80%; margin-top:20px; text-align:left;">
+            <div style="color:var(--col-architect); font-family:var(--font-data);">ITEM: Dell Latitude 7390</div>
+            <div style="font-size:0.8em; color:gray; margin-top:5px;">Статус: Готовий до відправки.</div>
+        </div>
+        <button class="big-btn" style="margin-top:30px; font-size:0.8rem;" onclick="location.reload()">ПЕРЕЗАВАНТАЖИТИ</button>
     </div>
 
     <script>
-        // TEQRA SYSTEM LOGIC
-        const Game = {
-            state: {
-                phase: 'boot', // boot, select, game, union
+        const System = {
+            data: {
                 role: null,
                 integrity: 100,
                 score: 0,
-                paused: false,
-                level: 1
+                timer: null
             },
-            config: {
-                decayRate: 0.1, // % per tick
-                roleColors: {
-                    foundation: '#d4af37',
-                    architect: '#4da6ff',
-                    resonance: '#9d4dff'
-                }
-            },
-            timers: {},
-            elements: {
-                prologue: document.getElementById('prologue-text'),
-                screens: document.querySelectorAll('.screen'),
-                gameArea: document.getElementById('game-area'),
-                hud: document.getElementById('hud'),
-                integrity: document.getElementById('integrity-val'),
-                pauseOverlay: document.getElementById('pause-overlay')
+            
+            // --- BOOT SEQUENCE ---
+            boot: function() {
+                // Hide Init, Show Prologue
+                document.getElementById('init-layer').classList.remove('active');
+                this.switchScreen('screen-prologue');
+                this.runPrologue();
+                this.initInputs();
             },
 
-            // --- INITIALIZATION ---
-            init: function() {
-                this.loadSystem();
-                if(!localStorage.getItem('teqra_save')) {
-                    this.runPrologue();
-                } else {
-                    // Simple resume logic for prototype
-                    this.switchScreen('screen-select');
-                    document.getElementById('hud').classList.remove('hidden');
-                }
-                
-                document.getElementById('pause-btn').addEventListener('click', () => this.togglePause());
-            },
-
-            // --- NARRATIVE ENGINE ---
-            runPrologue: function() {
-                const lines = [
-                    "Завантаження ядра...",
-                    "Фізична оболонка... відсутня.",
-                    "Людство... оцифровано.",
-                    "Рік 3036.",
-                    "Система TEQRA вітає вас, Процес #492.",
-                    "Аналіз цілісності... Критичний.",
-                    "Потрібне втручання."
-                ];
-                
-                let i = 0;
-                this.elements.prologue.style.opacity = 1;
-                this.elements.prologue.innerHTML = '';
-
-                const typeLine = () => {
-                    if (i < lines.length) {
-                        // Typing effect simulation
-                        let text = lines[i];
-                        let charIndex = 0;
-                        this.elements.prologue.innerHTML = ""; // Clear for new line or append? Let's clear.
-                        
-                        let interval = setInterval(() => {
-                            this.elements.prologue.innerHTML += text.charAt(charIndex);
-                            charIndex++;
-                            if (charIndex >= text.length) {
-                                clearInterval(interval);
-                                setTimeout(() => {
-                                    i++;
-                                    typeLine();
-                                }, 1500); // Wait before next line
-                            }
-                        }, 40);
-                    } else {
-                        // End of prologue
-                        setTimeout(() => {
-                            document.getElementById('start-prompt').style.opacity = 0.5;
-                            // Auto transition for prototype ease
-                            setTimeout(() => {
-                                this.switchScreen('screen-select');
-                            }, 3000);
-                        }, 1000);
-                    }
-                };
-                typeLine();
-            },
-
-            // --- SCREEN MANAGEMENT ---
             switchScreen: function(id) {
-                this.elements.screens.forEach(s => s.classList.remove('active'));
-                document.getElementById(id).classList.add('active');
-                
-                if (id === 'screen-game') {
-                    this.elements.hud.classList.remove('hidden');
-                    this.startGameLoop();
-                } else if (id === 'screen-union') {
-                    this.elements.hud.classList.add('hidden');
-                }
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                const target = document.getElementById(id);
+                if(target) target.classList.add('active');
             },
 
-            // --- ROLE SELECTION LOGIC ---
-            selectRole: function(role) {
-                this.state.role = role;
-                let brief = "";
-                if(role === 'foundation') brief = "ПРОТОКОЛ: ФУНДАМЕНТ<br>ЗАВДАННЯ: ЗНЕШКОДИТИ ДЕФЕКТИ ЯДРА. НЕ ЧІПАЙТЕ ФАНТОМИ.";
-                if(role === 'architect') brief = "ПРОТОКОЛ: АРХІТЕКТОР<br>ЗАВДАННЯ: ВІДНОВИТИ ЛОГІЧНИЙ ЛАНЦЮГ ДАНИХ.";
-                if(role === 'resonance') brief = "ПРОТОКОЛ: РЕЗОНАНС<br>ЗАВДАННЯ: СИНХРОНІЗУВАТИ ХВИЛЮ В МОМЕНТ ПЕРЕТИНУ.";
+            // --- PROLOGUE ---
+            runPrologue: function() {
+                const textEl = document.getElementById('prologue-text');
+                const msgs = [
+                    "Система... онлайн.",
+                    "Ядро стабільне.",
+                    "Очікування оператора.",
+                    "Виберіть протокол."
+                ];
+                let i = 0;
                 
-                document.getElementById('mission-brief').innerHTML = brief;
-                document.getElementById('mission-brief').style.color = this.config.roleColors[role];
-                
-                this.switchScreen('screen-game');
-            },
-
-            // --- GAME LOOP ---
-            startGameLoop: function() {
-                this.state.integrity = 100;
-                this.state.score = 0;
-                this.state.paused = false;
-                this.elements.gameArea.innerHTML = ''; // Clear area
-                
-                if (this.state.role === 'foundation') this.initFoundation();
-                if (this.state.role === 'architect') this.initArchitect();
-                if (this.state.role === 'resonance') this.initResonance();
-
-                // Global Decay Tick
-                this.timers.global = setInterval(() => {
-                    if(!this.state.paused) {
-                        this.updateStatus();
+                // Fast typing loop
+                const nextLine = () => {
+                    if(i >= msgs.length) {
+                        setTimeout(() => this.switchScreen('screen-select'), 1000);
+                        return;
                     }
-                }, 1000);
+                    textEl.innerHTML = msgs[i];
+                    textEl.style.opacity = 0;
+                    
+                    // Fade in effect
+                    setTimeout(() => { 
+                        textEl.style.opacity = 1; 
+                        i++;
+                        setTimeout(nextLine, 1500);
+                    }, 100);
+                };
+                nextLine();
             },
 
-            updateStatus: function() {
-                // Decay logic based on role difficulty
-                let decay = 0;
-                if(this.state.role === 'foundation') decay = 1.5; 
-                // Integrity check
-                if (this.state.integrity <= 0) {
-                    this.gameOver();
-                }
-                this.elements.integrity.innerText = Math.floor(this.state.integrity) + "%";
-            },
+            // --- INPUT HANDLING (TOUCH + MOUSE) ---
+            initInputs: function() {
+                // Helper to attach hold events
+                const attachHold = (id, role) => {
+                    const el = document.getElementById(id);
+                    let pressTimer;
+                    const bar = el.querySelector('.progress-bar');
 
-            // --- MECHANIC: FOUNDATION ---
-            initFoundation: function() {
-                this.timers.spawn = setInterval(() => {
-                    if(this.state.paused) return;
-                    
-                    const isReal = Math.random() > 0.4; // 60% real
-                    const rift = document.createElement('div');
-                    rift.classList.add('rift');
-                    rift.classList.add(isReal ? 'real' : 'fake');
-                    
-                    // Random pos
-                    rift.style.left = Math.random() * 700 + 'px';
-                    rift.style.top = Math.random() * 400 + 'px';
-                    rift.style.width = Math.random() * 40 + 30 + 'px';
-                    rift.style.height = rift.style.width;
-
-                    rift.onclick = (e) => {
-                        if(this.state.paused) return;
-                        if(isReal) {
-                            // Good click
-                            this.state.integrity = Math.min(100, this.state.integrity + 5);
-                            this.state.score += 10;
-                            e.target.remove();
-                            this.checkWinCondition();
-                        } else {
-                            // Bad click (Fake)
-                            this.state.integrity -= 10;
-                            this.sysMessage("ПОМИЛКА: ФАНТОМНИЙ ОБ'ЄКТ");
-                        }
+                    const start = (e) => {
+                        e.preventDefault(); // Stop scroll on mobile
+                        el.classList.add('touch-active');
+                        bar.style.transition = "width 2s linear";
+                        bar.style.width = "100%";
+                        
+                        pressTimer = setTimeout(() => {
+                            this.startGame(role);
+                        }, 2000);
                     };
 
-                    // Auto remove after time
-                    setTimeout(() => {
-                        if(rift.parentNode) {
-                            if(isReal) this.state.integrity -= 5; // Penalty for missing real
-                            rift.remove();
-                        }
-                    }, 3000);
+                    const cancel = (e) => {
+                        el.classList.remove('touch-active');
+                        clearTimeout(pressTimer);
+                        bar.style.transition = "width 0.2s";
+                        bar.style.width = "0%";
+                    };
 
-                    this.elements.gameArea.appendChild(rift);
+                    // Mouse
+                    el.addEventListener('mousedown', start);
+                    el.addEventListener('mouseup', cancel);
+                    el.addEventListener('mouseleave', cancel);
+                    
+                    // Touch
+                    el.addEventListener('touchstart', start, {passive: false});
+                    el.addEventListener('touchend', cancel);
+                };
 
+                attachHold('role-found', 'foundation');
+                attachHold('role-arch', 'architect');
+                attachHold('role-res', 'resonance');
+            },
+
+            // --- GAME LOGIC ---
+            startGame: function(role) {
+                this.data.role = role;
+                this.data.integrity = 100;
+                this.data.score = 0;
+                this.switchScreen('screen-game');
+                
+                const labels = {
+                    foundation: "ЗНЕШКОДЬТЕ ЗОЛОТІ РОЗЛОМИ",
+                    architect: "СОРТУЙТЕ ПОТОКИ ДАНИХ",
+                    resonance: "СИНХРОНІЗУЙТЕ РИТМ"
+                };
+                document.getElementById('mission-text').innerText = labels[role];
+
+                // Start Spawner
+                if(this.data.timer) clearInterval(this.data.timer);
+                
+                this.data.timer = setInterval(() => {
+                    if(this.data.integrity <= 0) {
+                        alert("СИСТЕМА ВТРАЧЕНА");
+                        this.reset();
+                        return;
+                    }
+                    if(this.data.score >= 5) { // Win condition (short for prototype)
+                        clearInterval(this.data.timer);
+                        this.switchScreen('screen-shop');
+                        return;
+                    }
+                    this.spawnTarget();
                 }, 800);
             },
 
-            // --- MECHANIC: ARCHITECT ---
-            initArchitect: function() {
-                // Create scrambled list
-                const data = ["SYSTEM_ROOT", "KERNEL_V3", "DATA_STREAM_01", "LOGIC_GATE", "OUTPUT_HEX"];
-                // Scramble visual order only
-                let container = document.createElement('div');
-                container.className = 'data-stream';
+            spawnTarget: function() {
+                const area = document.getElementById('game-area');
+                const el = document.createElement('div');
+                const isTarget = Math.random() > 0.3; // 70% real targets
                 
-                data.forEach((txt, index) => {
-                    let block = document.createElement('div');
-                    block.className = 'data-block';
-                    block.innerHTML = `<span>[0x0${index}]</span> <span>${txt}</span> <span>PENDING</span>`;
-                    block.onclick = () => {
-                        if(this.state.paused) return;
-                        block.classList.add('aligned');
-                        block.querySelector('span:last-child').innerText = "ALIGNED";
-                        block.style.borderColor = "#4da6ff";
-                        this.state.score += 20;
-                        this.checkWinCondition();
-                    };
-                    container.appendChild(block);
-                });
+                el.className = isTarget ? 'rift real' : 'rift';
                 
-                this.elements.gameArea.appendChild(container);
-            },
+                // Random Pos
+                const x = Math.random() * (area.clientWidth - 60);
+                const y = Math.random() * (area.clientHeight - 60);
+                el.style.left = x + 'px';
+                el.style.top = y + 'px';
 
-            // --- MECHANIC: RESONANCE ---
-            initResonance: function() {
-                const target = document.createElement('div');
-                target.className = 'target-ring';
-                this.elements.gameArea.appendChild(target);
-
-                const createPulse = () => {
-                    if(this.state.paused) return;
-                    
-                    const pulse = document.createElement('div');
-                    pulse.className = 'res-circle';
-                    this.elements.gameArea.appendChild(pulse);
-                    
-                    let size = 0;
-                    let expanding = true;
-                    
-                    let anim = setInterval(() => {
-                        if(this.state.paused) return;
-
-                        if (expanding) size += 2;
-                        pulse.style.width = size + 'px';
-                        pulse.style.height = size + 'px';
-                        pulse.style.opacity = 1 - (size/300);
-
-                        if(size > 300) {
-                            clearInterval(anim);
-                            pulse.remove();
-                            this.state.integrity -= 5; // Missed
-                        }
-                    }, 10);
-
-                    // Interaction
-                    window.addEventListener('keydown', checkHit);
-                    this.elements.gameArea.addEventListener('click', checkHit);
-
-                    function checkHit(e) {
-                        if (e.type === 'keydown' && e.code !== 'Space') return;
-                        
-                        // Check logic: target is 200px. Perfect hit is 180-220
-                        if (size > 170 && size < 230) {
-                            pulse.style.borderColor = "#3ecf8e";
-                            Game.state.score += 25;
-                            clearInterval(anim);
-                            pulse.remove();
-                            Game.checkWinCondition();
-                        }
-                        // Remove listeners to prevent spam
-                        window.removeEventListener('keydown', checkHit);
-                        Game.elements.gameArea.removeEventListener('click', checkHit);
+                // Click/Touch Handler
+                const hit = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation(); // Prevent hitting background
+                    if(isTarget) {
+                        this.data.score++;
+                        el.style.background = '#fff';
+                        setTimeout(() => el.remove(), 100);
+                        this.flashIntegrity(true);
+                    } else {
+                        this.data.integrity -= 20;
+                        this.updateHud();
+                        el.style.borderColor = 'red';
+                        this.flashIntegrity(false);
                     }
                 };
 
-                this.timers.spawn = setInterval(createPulse, 2500);
-            },
+                el.addEventListener('mousedown', hit);
+                el.addEventListener('touchstart', hit);
 
-            // --- SYSTEM UTILS ---
-            checkWinCondition: function() {
-                // Simplified for prototype: 100 score wins level
-                if (this.state.score >= 100) {
-                    this.cleanup();
-                    this.sysMessage("СИНХРОНІЗАЦІЯ ЗАВЕРШЕНА. ПЕРЕХІД...");
-                    setTimeout(() => {
-                        this.switchScreen('screen-union');
-                    }, 2000);
-                }
-            },
+                area.appendChild(el);
 
-            gameOver: function() {
-                this.cleanup();
-                this.sysMessage("КРИТИЧНА ПОМИЛКА. СИСТЕМА ПЕРЕЗАВАНТАЖУЄТЬСЯ.");
+                // Auto remove
                 setTimeout(() => {
-                    this.switchScreen('screen-select');
-                }, 3000);
-            },
-
-            cleanup: function() {
-                clearInterval(this.timers.global);
-                clearInterval(this.timers.spawn);
-                this.elements.gameArea.innerHTML = '';
-            },
-
-            sysMessage: function(msg) {
-                const status = document.getElementById('status-val');
-                const original = status.innerText;
-                status.innerText = msg;
-                status.style.color = 'var(--col-foundation)';
-                setTimeout(() => {
-                    status.innerText = original;
-                    status.style.color = 'var(--text-main)';
+                    if(el.parentNode) el.remove();
                 }, 2000);
             },
 
-            togglePause: function() {
-                this.state.paused = !this.state.paused;
-                if(this.state.paused) {
-                    this.elements.pauseOverlay.classList.add('active');
-                } else {
-                    this.elements.pauseOverlay.classList.remove('active');
-                }
+            flashIntegrity: function(good) {
+                const hud = document.getElementById('val-integrity');
+                hud.style.color = good ? '#3ecf8e' : '#cf3e3e';
+                setTimeout(() => hud.style.color = 'white', 300);
             },
 
-            saveAndExit: function() {
-                localStorage.setItem('teqra_save', JSON.stringify(this.state));
-                alert("ДАНІ ЗБЕРЕЖЕНО В ЛОКАЛЬНОМУ ЯДРІ.");
-            },
-            
-            loadSystem: function() {
-                const data = localStorage.getItem('teqra_save');
-                if(data) this.state = JSON.parse(data);
+            updateHud: function() {
+                document.getElementById('val-integrity').innerText = this.data.integrity + "%";
             },
 
-            resetSystem: function() {
-                localStorage.removeItem('teqra_save');
+            reset: function() {
                 location.reload();
             }
         };
-
-        // --- INTERACTION HANDLERS FOR SELECTION ---
-        let selectTimer;
-        function startSelect(role) {
-            const el = document.querySelector(`.role-node[data-role="${role}"] .progress-bar`);
-            el.style.width = "100%";
-            el.style.transition = "width 2s linear";
-            
-            selectTimer = setTimeout(() => {
-                Game.selectRole(role);
-            }, 2000);
-        }
-
-        function cancelSelect() {
-            clearTimeout(selectTimer);
-            document.querySelectorAll('.progress-bar').forEach(b => {
-                b.style.width = "0%";
-                b.style.transition = "width 0.2s";
-            });
-        }
-
-        // BOOT SYSTEM
-        window.onload = () => Game.init();
-
     </script>
 </body>
 </html>
