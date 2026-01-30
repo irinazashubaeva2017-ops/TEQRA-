@@ -7,20 +7,16 @@
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;user-select:none}
-html,body{width:100%;height:100%;background:#000;color:#eaeaea;font-family:"Courier New",monospace;overflow:hidden}
+html,body{width:100%;height:100%;background:#000;color:#eaeaea;font-family:Courier New,monospace;overflow:hidden}
 
 :root{
 --green:#00ff9c;
---gold:#ffb86b;
---blue:#66d9ff;
---violet:#c792ea;
 --red:#ff4d4d;
+--gold:#ffb86b;
 }
 
-/* MATRIX */
 canvas{position:fixed;inset:0;z-index:1}
 
-/* SCREENS */
 .screen{
 position:fixed;inset:0;z-index:3;
 display:flex;justify-content:center;align-items:center;
@@ -30,56 +26,43 @@ opacity:0;pointer-events:none;transition:1s;
 
 .panel{max-width:760px;padding:24px;text-align:center}
 .line{margin:14px 0;font-size:18px}
-.glitch{animation:glitch 1.3s infinite}
+.glitch{animation:glitch 1.2s infinite}
 @keyframes glitch{
-0%{text-shadow:none}
 50%{text-shadow:-2px 0 red,2px 0 cyan}
-100%{text-shadow:none}
 }
 
-/* CHOICES */
-.choice{
-border:2px solid;padding:18px;margin:16px 0;
-cursor:pointer;transition:.25s;
-}
-.choice:hover{background:rgba(255,255,255,.06)}
-
-/* HUD */
 #hud{
-position:fixed;top:12px;left:50%;
+position:fixed;top:10px;left:50%;
 transform:translateX(-50%);
-z-index:6;font-size:18px;
-color:var(--red);letter-spacing:2px;
+z-index:6;font-size:18px;color:var(--red);
 }
 
-/* FRACTURES */
+#controls{
+position:fixed;top:10px;right:10px;z-index:6;
+}
+.btn{
+border:1px solid #555;color:#aaa;
+padding:6px 10px;margin-left:6px;
+cursor:pointer;font-size:12px;
+}
+.btn:hover{background:#111}
+
 .fracture{
-position:fixed;
-width:90px;height:90px;
-background:#000;
-border:2px solid var(--red);
+position:fixed;width:90px;height:90px;
+background:#000;border:2px solid var(--red);
 box-shadow:0 0 25px var(--red);
-z-index:5;
-animation:pulse 1s infinite;
+z-index:5;animation:pulse 1s infinite;
 }
-.false{
-border-style:dashed;
-opacity:.6;
-}
+.false{border-style:dashed;opacity:.6}
+
 @keyframes pulse{
-0%{transform:scale(.9)}
 50%{transform:scale(1.1)}
-100%{transform:scale(.9)}
 }
 
-/* SHAKE */
 body.chaos{animation:shake .12s infinite}
 @keyframes shake{
-0%{transform:translate(0)}
 25%{transform:translate(2px,-2px)}
 50%{transform:translate(-2px,2px)}
-75%{transform:translate(2px,2px)}
-100%{transform:translate(0)}
 }
 </style>
 </head>
@@ -89,29 +72,26 @@ body.chaos{animation:shake .12s infinite}
 <canvas id="matrix"></canvas>
 <div id="hud">РОЗПАД: 100%</div>
 
-<!-- PROLOGUE -->
+<div id="controls">
+  <span class="btn" onclick="togglePause()">ПАУЗА</span>
+  <span class="btn" onclick="resetGame()">СКИНУТИ</span>
+</div>
+
 <div id="prologue" class="screen active">
   <div class="panel">
     <div class="line">СИСТЕМА ТРІЩИТЬ.</div>
-    <div class="line">НЕ ЗОВНІ — ВСЕРЕДИНІ.</div>
-    <div class="line glitch">ДАНІ НЕ СХОДЯТЬСЯ.</div>
-    <div class="line">ПОТРІБЕН ПРИНЦИП.</div>
+    <div class="line glitch">ФУНДАМЕНТ ВТРАТИВ ФОРМУ.</div>
+    <div class="line">ОБЕРИ ШЛЯХ.</div>
   </div>
 </div>
 
-<!-- CHOICE -->
 <div id="choice" class="screen">
   <div class="panel">
-    <div class="line">ОБЕРИ ШЛЯХ.</div>
-    <div class="choice" style="border-color:var(--gold);color:var(--gold)" onclick="startFoundation()">
-      ФУНДАМЕНТ // СТІЙКІСТЬ
-    </div>
-    <div class="choice" style="border-color:var(--blue);color:var(--blue)">АРХІТЕКТОР // НЕДОСТУПНО</div>
-    <div class="choice" style="border-color:var(--violet);color:var(--violet)">РЕЗОНАНС // НЕДОСТУПНО</div>
+    <div class="line">ФУНДАМЕНТ // СТІЙКІСТЬ</div>
+    <div class="btn" onclick="startFoundation()">ПОЧАТИ</div>
   </div>
 </div>
 
-<!-- FOUNDATION -->
 <div id="foundation" class="screen">
   <div class="panel">
     <div class="line" style="color:var(--gold)">ГЛАВА I — ФУНДАМЕНТ</div>
@@ -122,13 +102,14 @@ body.chaos{animation:shake .12s infinite}
 </div>
 
 <script>
-/* MATRIX */
+/* ===== MATRIX ===== */
 const c=document.getElementById("matrix"),x=c.getContext("2d");
-let w,h,cols;
-function rs(){w=c.width=innerWidth;h=c.height=innerHeight;cols=Math.floor(w/16)}
-rs();onresize=rs;
+let w,h,cols,paused=false;
+function resize(){w=c.width=innerWidth;h=c.height=innerHeight;cols=Math.floor(w/16)}
+resize();onresize=resize;
 let drops=Array(cols).fill(0);
-function draw(){
+function matrix(){
+if(paused) return requestAnimationFrame(matrix);
 x.fillStyle="rgba(0,0,0,.35)";
 x.fillRect(0,0,w,h);
 x.fillStyle="#00ff9c";
@@ -138,41 +119,51 @@ x.fillText(Math.random()>.5?"1":"0",i*16,y*16);
 if(y*16>h||Math.random()>.96)drops[i]=0;
 drops[i]++;
 });
-requestAnimationFrame(draw);
+requestAnimationFrame(matrix);
 }
-draw();
+matrix();
 
-/* FLOW */
+/* ===== FLOW ===== */
 setTimeout(()=>{
 prologue.classList.remove("active");
 choice.classList.add("active");
-},6000);
+},4000);
 
-/* GAME */
+/* ===== GAME STATE ===== */
 let entropy=100;
 let fractures=[];
-const hud=document.getElementById("hud");
-const status=document.getElementById("status");
+let loop=null;
+
+function save(){
+localStorage.setItem("teqra_save",JSON.stringify({entropy}));
+}
+
+function load(){
+const s=localStorage.getItem("teqra_save");
+if(s) entropy=JSON.parse(s).entropy;
+}
 
 function updateHUD(){
 entropy=Math.max(0,Math.min(100,entropy));
 hud.textContent="РОЗПАД: "+entropy+"%";
+save();
 }
 
-function spawnFracture(){
+function spawnFracture(forceReal=false){
 const f=document.createElement("div");
 f.className="fracture";
-if(Math.random()<0.35)f.classList.add("false");
-f.style.top=Math.random()*75+"%";
-f.style.left=Math.random()*75+"%";
+if(!forceReal && Math.random()<0.4) f.classList.add("false");
+f.style.top=Math.random()*70+"%";
+f.style.left=Math.random()*70+"%";
 
 f.onclick=()=>{
+if(paused) return;
 if(f.classList.contains("false")){
-f.style.top=Math.random()*75+"%";
-f.style.left=Math.random()*75+"%";
+f.style.top=Math.random()*70+"%";
+f.style.left=Math.random()*70+"%";
 entropy+=2;
 }else{
-entropy-=12;
+entropy-=10;
 f.remove();
 fractures=fractures.filter(x=>x!==f);
 }
@@ -183,13 +174,23 @@ document.body.appendChild(f);
 fractures.push(f);
 }
 
+function ensureRealFracture(){
+if(!fractures.some(f=>!f.classList.contains("false")))
+spawnFracture(true);
+}
+
 function startFoundation(){
 choice.classList.remove("active");
 foundation.classList.add("active");
+load();updateHUD();
 
-const loop=setInterval(()=>{
-entropy+=fractures.length*0.6;
-updateHUD();
+loop=setInterval(()=>{
+if(paused) return;
+
+entropy+=fractures.length*0.4;
+ensureRealFracture();
+
+if(Math.random()<0.6 && fractures.length<8) spawnFracture();
 
 if(entropy>75){
 status.textContent="СТРУКТУРА РОЗПАДАЄТЬСЯ.";
@@ -199,15 +200,23 @@ status.textContent="";
 document.body.classList.remove("chaos");
 }
 
-if(Math.random()<0.5 && fractures.length<8)spawnFracture();
-
 if(entropy<=0){
 status.textContent="ФУНДАМЕНТ УТРИМАНО.";
-document.body.classList.remove("chaos");
 clearInterval(loop);
 fractures.forEach(f=>f.remove());
 }
-},400);
+updateHUD();
+},450);
+}
+
+function togglePause(){
+paused=!paused;
+status.textContent=paused?"ПАУЗА":"";
+}
+
+function resetGame(){
+localStorage.removeItem("teqra_save");
+location.reload();
 }
 </script>
 
