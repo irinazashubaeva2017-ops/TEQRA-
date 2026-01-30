@@ -3,212 +3,217 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TEQRA — ФУНДАМЕНТ</title>
+<title>TEQRA</title>
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{
-    background:#050507;
-    color:#d8d8dd;
+html, body {
+    margin: 0;
+    padding: 0;
+    background: #050505;
+    color: #e6e6e6;
     font-family: monospace;
-    overflow:hidden;
+    overflow: hidden;
+    user-select: none;
 }
 
-/* ===== БІНАРНИЙ ХАОС ===== */
-#binary{
-    position:fixed;
-    inset:0;
-    font-size:14px;
-    line-height:16px;
-    opacity:.18;
-    pointer-events:none;
-    white-space:pre;
-    animation: drift 6s infinite alternate;
-}
-@keyframes drift{
-    from{transform:translate(0,0)}
-    to{transform:translate(-40px,30px)}
+/* ===== MATRIX ===== */
+#matrix {
+    position: fixed;
+    inset: 0;
+    font-size: 18px;
+    line-height: 20px;
+    color: #00ff88;
+    opacity: 0.12;
+    white-space: pre;
+    pointer-events: none;
 }
 
-/* ===== ОСНОВА ===== */
-#ui{
-    position:relative;
-    max-width:760px;
-    margin:6vh auto;
-    padding:40px;
-    background:rgba(8,8,12,.82);
-    border:1px solid rgba(255,255,255,.12);
-    backdrop-filter:blur(6px);
-    z-index:10;
+/* ===== SCREENS ===== */
+.screen {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    z-index: 10;
 }
 
-.system{
-    font-size:12px;
-    letter-spacing:.35em;
-    opacity:.6;
-    margin-bottom:24px;
+.screen.active {
+    display: flex;
 }
 
-.text{
-    font-size:18px;
-    line-height:1.6;
-    margin-bottom:24px;
+h1 {
+    letter-spacing: 4px;
+    margin-bottom: 20px;
 }
 
-/* ===== КНОПКА ===== */
-#hold{
-    width:170px;
-    height:170px;
-    border-radius:50%;
-    border:2px solid #6dffd0;
-    margin:30px auto;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    letter-spacing:.25em;
-    color:#6dffd0;
-    user-select:none;
+p {
+    max-width: 340px;
+    line-height: 1.6;
+    opacity: 0.9;
 }
 
-/* ===== ПРОГРЕС ===== */
-#bar{
-    height:6px;
-    background:rgba(255,255,255,.08);
-}
-#fill{
-    height:100%;
-    width:35%;
-    background:#6dffd0;
-    transition:.15s;
+/* ===== BUTTON ===== */
+.btn {
+    margin-top: 40px;
+    padding: 14px 26px;
+    border: 1px solid #888;
+    cursor: pointer;
+    pointer-events: auto;
 }
 
-/* ===== ПОЛОМКИ ===== */
-.break{
-    position:absolute;
-    width:80px;
-    height:40px;
-    background:#000;
-    border:1px solid rgba(255,80,80,.8);
-    box-shadow:0 0 12px rgba(255,0,0,.5);
-    animation:flicker .4s infinite alternate;
-    cursor:pointer;
-}
-@keyframes flicker{
-    from{opacity:.4}
-    to{opacity:1}
+.btn:hover {
+    background: rgba(255,255,255,0.05);
 }
 
-/* ===== ГЛІТЧ ===== */
-.glitch{
-    animation:glitch .15s infinite;
+/* ===== PATH SELECTION ===== */
+.path {
+    width: 280px;
+    padding: 18px;
+    border: 1px solid #444;
+    margin: 10px 0;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: 0.2s;
 }
-@keyframes glitch{
-    0%{transform:translate(0)}
-    25%{transform:translate(-2px,1px)}
-    50%{transform:translate(2px,-1px)}
-    75%{transform:translate(-1px,2px)}
-    100%{transform:translate(0)}
+
+.path.active {
+    border-color: #00ffcc;
+    box-shadow: 0 0 20px rgba(0,255,200,0.3);
+}
+
+.path.dim {
+    opacity: 0.3;
+}
+
+/* ===== HOLD BUTTON ===== */
+#hold {
+    margin-top: 30px;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    border: 2px solid #00ffcc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00ffcc;
+    letter-spacing: 3px;
+    pointer-events: auto;
+}
+
+#hold.active {
+    transform: scale(0.96);
+    box-shadow: 0 0 30px #00ffcc;
+}
+
+/* ===== CRACKS ===== */
+.crack {
+    position: fixed;
+    width: 60px;
+    height: 60px;
+    background: #000;
+    z-index: 20;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(0,0,0,0.9);
 }
 </style>
 </head>
 
 <body>
 
-<pre id="binary"></pre>
+<div id="matrix"></div>
 
-<div id="ui">
-    <div class="system">ПРОТОКОЛ ФУНДАМЕНТУ</div>
+<!-- ПРОЛОГ -->
+<div class="screen active" id="prologue">
+    <h1>TEQRA</h1>
+    <p>
+        Система втратила центр.<br>
+        Дані більше не сходяться.<br><br>
+        Потрібна не дія.<br>
+        Потрібна присутність.
+    </p>
+    <div class="btn" onclick="goSelect()">ДАЛІ</div>
+</div>
 
-    <div class="text" id="text">
-        Система втрачає центр.<br><br>
-        Дані більше не сходяться в одній точці.<br><br>
-        Ти не виправляєш її.<br>
-        Ти утримуєш вагу.
+<!-- ВИБІР -->
+<div class="screen" id="select">
+    <h1>ОБЕРИ ПРИНЦИП</h1>
+
+    <div class="path" data-path="foundation">
+        ФУНДАМЕНТ //<br> СТІЙКІСТЬ
     </div>
 
-    <div id="hold">УТРИМУВАТИ</div>
+    <div class="path" data-path="architect">
+        АРХІТЕКТОР //<br> ЛОГІКА
+    </div>
 
-    <div id="bar"><div id="fill"></div></div>
+    <div class="path" data-path="resonance">
+        РЕЗОНАНС //<br> ЗВ’ЯЗКИ
+    </div>
+
+    <div class="btn" id="confirm" style="display:none;" onclick="startPath()">
+        ПІДТВЕРДИТИ ВИБІР
+    </div>
+</div>
+
+<!-- ФУНДАМЕНТ -->
+<div class="screen" id="foundation">
+    <h1>ФУНДАМЕНТ</h1>
+    <p>
+        Ти не виправляєш систему.<br>
+        Ти утримуєш її вагу.
+    </p>
+
+    <div id="hold">УТРИМУВАТИ</div>
 </div>
 
 <script>
-/* ===== БІНАРНИЙ ФОН ===== */
-const binary=document.getElementById("binary");
-setInterval(()=>{
-    let out="";
-    for(let i=0;i<1000;i++){
-        out+=Math.random()>.5?"1":"0";
-        if(i%80===0)out+="\n";
+/* MATRIX */
+const matrix = document.getElementById('matrix');
+const cols = Math.floor(window.innerWidth / 14);
+setInterval(() => {
+    let out = '';
+    for (let i = 0; i < 50; i++) {
+        for (let j = 0; j < cols; j++) {
+            out += Math.random() > 0.5 ? '1' : '0';
+        }
+        out += '\n';
     }
-    binary.textContent=out;
-},180);
+    matrix.textContent = out;
+}, 120);
 
-/* ===== СТАН ===== */
-let holding=false;
-let stability=35;
-let active=true;
+/* SCREENS */
+function show(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
 
-/* ===== КНОПКА ===== */
-const hold=document.getElementById("hold");
-hold.addEventListener("mousedown",()=>holding=true);
-hold.addEventListener("mouseup",()=>holding=false);
-hold.addEventListener("touchstart",()=>holding=true);
-hold.addEventListener("touchend",()=>holding=false);
+function goSelect() {
+    show('select');
+}
 
-/* ===== ПОЛОМКИ ===== */
-function spawnBreak(){
-    if(!active) return;
-    const b=document.createElement("div");
-    b.className="break";
-    b.style.left=Math.random()*80+"%";
-    b.style.top=Math.random()*80+"%";
-    b.onclick=()=>{
-        stability+=10;
-        b.remove();
+/* PATH SELECTION */
+let selected = null;
+document.querySelectorAll('.path').forEach(p => {
+    p.onclick = () => {
+        selected = p.dataset.path;
+        document.querySelectorAll('.path').forEach(x => {
+            x.classList.toggle('active', x === p);
+            x.classList.toggle('dim', x !== p);
+        });
+        document.getElementById('confirm').style.display = 'block';
     };
-    document.body.appendChild(b);
-    setTimeout(()=>b.remove(),2600);
+});
+
+function startPath() {
+    if (selected === 'foundation') {
+        show('foundation');
+    } else {
+        alert('Цей шлях ще не активний');
+    }
 }
-setInterval(spawnBreak,1700);
-
-/* ===== ЦИКЛ ===== */
-const fill=document.getElementById("fill");
-const text=document.getElementById("text");
-
-function loop(){
-    if(!active) return;
-
-    if(holding){
-        stability+=0.35;
-        document.body.classList.remove("glitch");
-    }else{
-        stability-=0.6;
-        document.body.classList.add("glitch");
-    }
-
-    stability=Math.max(0,Math.min(100,stability));
-    fill.style.width=stability+"%";
-
-    if(stability<=0){
-        active=false;
-        text.innerHTML="СИСТЕМА ЗРУЙНОВАНА.<br>Фундамент втрачено.";
-        document.body.classList.remove("glitch");
-        return;
-    }
-
-    if(stability>=100){
-        active=false;
-        text.innerHTML=
-        "Рівновага зафіксована.<br><br>"+
-        "Ти витримала навантаження.<br>"+
-        "Фундамент прийняв тебе.";
-        document.body.classList.remove("glitch");
-        return;
-    }
-
-    requestAnimationFrame(loop);
-}
-loop();
 </script>
 
 </body>
