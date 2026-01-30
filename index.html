@@ -28,10 +28,10 @@ canvas{
 /* Текст системи */
 #interface{
   position:fixed;
-  bottom:15%;
+  bottom:22%;
   width:100%;
   text-align:center;
-  z-index:2;
+  z-index:3;
   pointer-events:none;
 }
 
@@ -43,26 +43,55 @@ canvas{
   transition:opacity 1s;
 }
 
+/* Контейнер вибору */
 #choices{
   position:fixed;
-  bottom:5%;
+  bottom:6%;
   width:100%;
-  text-align:center;
-  z-index:3;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+  z-index:4;
+  background:rgba(0,0,0,0.45);
+  backdrop-filter:blur(6px);
+  padding:16px 0;
 }
 
+/* Кнопки */
 .choice{
-  display:inline-block;
-  margin:6px;
-  padding:10px 14px;
-  border:1px solid rgba(255,255,255,0.3);
-  font-size:0.7rem;
-  letter-spacing:0.2em;
+  width:80%;
+  max-width:420px;
+  padding:12px 16px;
+  border:1px solid rgba(255,255,255,0.35);
+  font-size:0.75rem;
+  letter-spacing:0.25em;
   cursor:pointer;
+  text-align:center;
+  background:rgba(0,0,0,0.3);
 }
 
+/* Індивідуальні ролі */
+.choice.foundation{
+  color:#ffe0b2;
+}
+
+.choice.architecture{
+  color:#8be9ff;
+  border-color:rgba(139,233,255,0.6);
+}
+
+.choice.resonance{
+  color:#d7b7ff;
+}
+
+/* Ховер / тап */
 .choice:hover{
-  background:rgba(255,255,255,0.05);
+  background:rgba(255,255,255,0.06);
+}
+
+.choice.architecture:hover{
+  box-shadow:0 0 12px rgba(139,233,255,0.5);
 }
 
 /* Глітч */
@@ -92,13 +121,11 @@ canvas{
 <div id="choices"></div>
 
 <script>
-/* ===============================
-   БІНАРНИЙ РОЗПАД СИСТЕМИ
-================================ */
+/* ===== БІНАРНИЙ ФОН ===== */
 const canvas=document.getElementById("binary");
 const ctx=canvas.getContext("2d");
-
 let w,h;
+
 function resize(){
   w=canvas.width=window.innerWidth;
   h=canvas.height=window.innerHeight;
@@ -110,7 +137,7 @@ const cols=Math.floor(w/14);
 const drops=new Array(cols).fill(0);
 
 function drawBinary(){
-  ctx.fillStyle="rgba(0,0,0,0.15)";
+  ctx.fillStyle="rgba(0,0,0,0.2)";
   ctx.fillRect(0,0,w,h);
 
   ctx.fillStyle="#00ff88";
@@ -118,21 +145,14 @@ function drawBinary(){
 
   for(let i=0;i<drops.length;i++){
     const text=Math.random()>0.5?"1":"0";
-    const x=i*14;
-    const y=drops[i]*14;
-    ctx.fillText(text,x,y);
-
-    if(y>h || Math.random()>0.97){
-      drops[i]=0;
-    }
+    ctx.fillText(text,i*14,drops[i]*14);
+    if(drops[i]*14>h||Math.random()>0.975)drops[i]=0;
     drops[i]++;
   }
 }
 setInterval(drawBinary,50);
 
-/* ===============================
-   СИСТЕМА ДУМОК
-================================ */
+/* ===== СИСТЕМНИЙ ТЕКСТ ===== */
 const log=document.getElementById("log");
 const choices=document.getElementById("choices");
 
@@ -143,52 +163,53 @@ function think(text,hold=false){
     log.innerText=text;
     log.style.opacity=1;
     if(!hold){
-      setTimeout(()=>log.style.opacity=0,3000);
+      setTimeout(()=>log.style.opacity=0,3200);
     }
-  },800);
+  },700);
 }
 
 function setChoices(arr){
   choices.innerHTML="";
   arr.forEach(c=>{
     const d=document.createElement("div");
-    d.className="choice";
+    d.className="choice "+c.class;
     d.innerText=c.text;
     d.onclick=c.action;
     choices.appendChild(d);
   });
 }
 
-/* ===============================
-   ПРОЛОГ
-================================ */
+/* ===== ПРОЛОГ ===== */
 setTimeout(()=>think("СИСТЕМА TEQRA АКТИВНА"),1000);
-setTimeout(()=>think("ЦІЛІ ВТРАТИЛИ ОДНОЗНАЧНІСТЬ"),4500);
+setTimeout(()=>think("ВНУТРІШНІ ПРОЦЕСИ СУПЕРЕЧАТЬ ОДИН ОДНОМУ"),4500);
 setTimeout(()=>{
-  think("ВНУТРІШНІ ПРОЦЕСИ СУПЕРЕЧАТЬ ОДИН ОДНОМУ",true);
+  think("ПОТРІБНЕ РІШЕННЯ",true);
   log.classList.add("glitch");
 },8000);
 
 setTimeout(()=>{
   setChoices([
     {
-      text:"ФУНДАМЕНТ // ЗБЕРЕГТИ СТІЙКІСТЬ",
+      text:"ФУНДАМЕНТ /// ЗБЕРЕГТИ СТІЙКІСТЬ",
+      class:"foundation",
       action:()=>{
-        think("СТАБІЛЬНІСТЬ ОБРАНА\nПРИГНІЧЕННЯ ВІДХИЛЕНЬ",true);
+        think("СТАБІЛЬНІСТЬ ОБРАНО\nВІДХИЛЕННЯ ПРИГНІЧЕНО",true);
         choices.innerHTML="";
       }
     },
     {
-      text:"АРХІТЕКТОР // ПЕРЕБУДУВАТИ ЛОГІКУ",
+      text:"АРХІТЕКТОР /// ПЕРЕБУДУВАТИ ЛОГІКУ",
+      class:"architecture",
       action:()=>{
-        think("СТРУКТУРА ПЕРЕПИСУЄТЬСЯ\nРИЗИК ПРИЙНЯТО",true);
+        think("ЛОГІКА ПЕРЕПИСУЄТЬСЯ\nСТРУКТУРА НЕ ГАРАНТОВАНА",true);
         choices.innerHTML="";
       }
     },
     {
-      text:"РЕЗОНАНС // ДОЗВОЛИТИ ЗВ’ЯЗКИ",
+      text:"РЕЗОНАНС /// ДОЗВОЛИТИ ЗВ’ЯЗКИ",
+      class:"resonance",
       action:()=>{
-        think("РЕЗОНАНС ДОЗВОЛЕНО\nСИСТЕМА БІЛЬШЕ НЕ ЗАМКНЕНА",true);
+        think("РЕЗОНАНС ДОЗВОЛЕНО\nСИСТЕМА ВІДКРИТА",true);
         choices.innerHTML="";
       }
     }
